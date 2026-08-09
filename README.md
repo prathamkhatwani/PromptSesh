@@ -10,7 +10,7 @@
 [![Gemini AI](https://img.shields.io/badge/Google-Gemini_Flash-8860D0?style=flat-square&logo=google)](https://ai.google.dev/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
-[Explore Challenges](https://github.com/prathamkhatwani/PromptSesh) • [Features](#-key-features) • [Tech Stack](#%EF%B8%8F-tech-stack) • [Getting Started](#-getting-started) • [Deployment](#-deployment)
+[Explore Challenges](https://github.com/prathamkhatwani/PromptSesh) • [Features](#-key-features) • [Tech Stack](#%EF%B8%8F-tech-stack) • [Getting Started](#-getting-started)
 
 </div>
 
@@ -105,19 +105,6 @@ Whether you're crafting zero-shot classifiers, building multi-step agentic tool 
 
 5. **Open in Browser**:
    Navigate to [http://localhost:3000](http://localhost:3000) to start practicing!
-
----
-
-## 🌐 Deployment
-
-### Deploy to Vercel (Recommended)
-
-PromptSesh is optimized for 1-click deployment on Vercel:
-
-1. Push your repository to GitHub.
-2. Go to [Vercel](https://vercel.com/new) and import `PromptSesh`.
-3. Add your `GOOGLE_GENERATIVE_AI_API_KEY` to Vercel Environment Variables.
-4. Click **Deploy**.
 
 ---
 
