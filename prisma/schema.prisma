@@ -1,0 +1,253 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── NextAuth Models ─────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  bio           String?
+  username      String?   @unique
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  submissions   Submission[]
+  streaks       Streak[]
+  userBadges    UserBadge[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Core Domain Models ──────────────────────────────────────
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String
+  icon        String?
+  color       String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  challenges Challenge[]
+}
+
+model Challenge {
+  id              String     @id @default(cuid())
+  title           String
+  slug            String     @unique
+  description     String     @db.Text
+  difficulty      Difficulty
+  categoryId      String
+  systemPrompt    String?    @db.Text
+  starterPrompt   String?    @db.Text
+  testInputs      Json?
+  constraints     String?    @db.Text
+  hints           String[]
+  isPublished     Boolean    @default(false)
+  isPremium       Boolean    @default(false)
+  acceptanceRate  Float      @default(0)
+  totalSubmissions Int       @default(0)
+  sortOrder       Int        @default(0)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  category    Category     @relation(fields: [categoryId], references: [id])
+  rubric      Rubric?
+  submissions Submission[]
+}
+
+model Rubric {
+  id          String   @id @default(cuid())
+  challengeId String   @unique
+  name        String
+  description String?
+  version     Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  challenge Challenge       @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  criteria  RubricCriterion[]
+}
+
+model RubricCriterion {
+  id               String  @id @default(cuid())
+  rubricId         String
+  name             String
+  description      String  @db.Text
+  weight           Float
+  maxScore         Int     @default(100)
+  evaluationPrompt String  @db.Text
+  scoringAnchors   Json?
+  sortOrder        Int     @default(0)
+
+  rubric           Rubric           @relation(fields: [rubricId], references: [id], onDelete: Cascade)
+  submissionScores SubmissionScore[]
+}
+
+// ─── Submission & Grading ────────────────────────────────────
+
+model Submission {
+  id            String           @id @default(cuid())
+  userId        String
+  challengeId   String
+  promptText    String           @db.Text
+  variables     Json?
+  status        SubmissionStatus @default(PENDING)
+  totalScore    Float?
+  passed        Boolean?
+  tokenCount    Int?
+  executionTime Int?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge        Challenge         @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  scores           SubmissionScore[]
+  modelTestResults ModelTestResult[]
+}
+
+model SubmissionScore {
+  id           String @id @default(cuid())
+  submissionId String
+  criterionId  String
+  score        Float
+  maxScore     Int    @default(100)
+  passed       Boolean
+  feedback     String @db.Text
+  createdAt    DateTime @default(now())
+
+  submission Submission      @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  criterion  RubricCriterion @relation(fields: [criterionId], references: [id], onDelete: Cascade)
+}
+
+model ModelTestResult {
+  id           String   @id @default(cuid())
+  submissionId String
+  modelProvider String
+  modelName    String
+  rawOutput    String   @db.Text
+  tokenUsage   Json?
+  latencyMs    Int?
+  score        Float?
+  passed       Boolean?
+  metadata     Json?
+  createdAt    DateTime @default(now())
+
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+}
+
+// ─── Gamification ────────────────────────────────────────────
+
+model Streak {
+  id           String   @id @default(cuid())
+  userId       String
+  currentStreak Int     @default(0)
+  longestStreak Int     @default(0)
+  lastActiveAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  icon        String
+  tier        BadgeTier @default(BRONZE)
+  requirement Json
+  createdAt   DateTime  @default(now())
+
+  userBadges UserBadge[]
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+}
+
+// ─── Enums ───────────────────────────────────────────────────
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+  EXPERT
+}
+
+enum SubmissionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  TIMEOUT
+}
+
+enum BadgeTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}

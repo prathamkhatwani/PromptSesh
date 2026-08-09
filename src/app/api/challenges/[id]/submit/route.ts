@@ -1,0 +1,315 @@
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+import { NextResponse } from "next/server";
+import { compilePrompt, callModel, callJudge } from "@/lib/llm";
+import { SubmissionStatus } from "@prisma/client";
+import * as mock from "@/lib/mock-data";
+import { checkDbConnection } from "@/lib/queries";
+
+import { checkRateLimit } from "@/lib/rate-limit";
+
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const ip = req.headers.get("x-forwarded-for") || "client-ip";
+    const rateLimitResult = checkRateLimit(ip, 10, 60000);
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. You can make up to 10 prompt evaluations per minute." },
+        { status: 429 }
+      );
+    }
+
+    const { id } = await params;
+    const body = await req.json();
+    const { promptText, modelId = "gemini", crossModel = false } = body;
+
+    const cleanedPrompt = promptText.replace(/\(\s*write your prompt here\s*\.?\.?\s*\)/gi, "").trim();
+    if (!cleanedPrompt || cleanedPrompt.length < 5) {
+      return NextResponse.json(
+        { error: "Please write your custom prompt instructions before submitting. Placeholder text cannot be evaluated." },
+        { status: 400 }
+      );
+    }
+
+    const isDbConnected = await checkDbConnection();
+
+    // ───────────────── OFFLINE / MOCK DATABASE FALLBACK ─────────────────
+    if (!isDbConnected) {
+      console.log("⚠️ Database down. Operating in offline submission grading mode.");
+      
+      // Look up challenge from mock-data by ID or Slug
+      const mockChallenge = mock.challenges.find(c => c.id === id || c.slug === id);
+      if (!mockChallenge) {
+        return NextResponse.json({ error: "Challenge not found in mock data" }, { status: 404 });
+      }
+
+      // Compile user prompt
+      const testCases = mockChallenge.testInputs || [{}];
+      const testCase = testCases[0] || {};
+      const compiledPrompt = compilePrompt(promptText, testCase);
+
+      // Model execution mock call
+      const modelExecution = await callModel(
+        "Google",
+        "gemini-1.5-flash",
+        compiledPrompt,
+        mockChallenge.constraints ? mockChallenge.constraints.join("\n") : undefined
+      );
+
+      // Call judge evaluation (uses mock heuristic when API key is missing)
+      const judgeGrades = await callJudge(
+        mockChallenge.rubricCriteria,
+        promptText,
+        modelExecution.text
+      );
+
+      // Calculate aggregate weighted scores
+      let totalScore = 0;
+      const mockScoresList = mockChallenge.rubricCriteria.map((crit, idx) => {
+        const judgeScore = judgeGrades.criteria_scores.find(
+          (s) => s.label.toLowerCase() === crit.name.toLowerCase()
+        );
+        const scoreValue = judgeScore ? judgeScore.score : 80;
+        totalScore += scoreValue * (crit.weight / 100);
+
+        return {
+          id: `mock-score-${idx}`,
+          submissionId: "mock-sub-id",
+          criterionId: `crit-${idx}`,
+          score: scoreValue,
+          passed: scoreValue >= 70,
+          feedback: judgeScore?.justification || "Satisfies criteria guidelines.",
+          criterion: { name: crit.name },
+        };
+      });
+
+      const mockSubmission = {
+        id: "mock-sub-id",
+        userId: "dev-user-id",
+        challengeId: id,
+        promptText,
+        status: "COMPLETED",
+        totalScore,
+        passed: totalScore >= 70,
+        tokenCount: modelExecution.tokenCount,
+        executionTime: modelExecution.executionTimeMs,
+        scores: mockScoresList,
+        modelTestResults: [
+          {
+            id: "mock-res-id",
+            submissionId: "mock-sub-id",
+            modelProvider: "OpenAI",
+            modelName: "gpt-4o-mini",
+            rawOutput: modelExecution.text,
+            latencyMs: modelExecution.executionTimeMs,
+            score: totalScore,
+            passed: totalScore >= 70,
+          },
+        ],
+        cached: false,
+      };
+
+      return NextResponse.json({
+        success: true,
+        cached: false,
+        submission: mockSubmission,
+      });
+    }
+
+    // ───────────────── LIVE DATABASE CONNECTED FLOW ─────────────────
+    const session = await auth();
+    const userId = session?.user?.id;
+
+    if (!userId && process.env.NODE_ENV === "production") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const finalUserId = userId || "dev-user-id";
+
+    // Guarantee dev user exists in database
+    if (!userId && process.env.NODE_ENV !== "production") {
+      await prisma.user.upsert({
+        where: { id: finalUserId },
+        update: {},
+        create: {
+          id: finalUserId,
+          name: "Developer",
+          email: "dev@promptcode.local",
+        },
+      });
+    }
+
+    // Fetch challenge & criteria
+    const challenge = await prisma.challenge.findUnique({
+      where: { id },
+      include: {
+        rubric: {
+          include: {
+            criteria: {
+              orderBy: { sortOrder: "asc" },
+            },
+          },
+        },
+      },
+    });
+
+    if (!challenge) {
+      return NextResponse.json({ error: "Challenge not found" }, { status: 404 });
+    }
+
+    const criteria = challenge.rubric?.criteria || [];
+    if (criteria.length === 0) {
+      return NextResponse.json(
+        { error: "Challenge has no grading rubric configured" },
+        { status: 400 }
+      );
+    }
+
+    // Check Cache
+    const cachedSubmission = await prisma.submission.findFirst({
+      where: {
+        userId: finalUserId,
+        challengeId: challenge.id,
+        promptText: promptText.trim(),
+        status: SubmissionStatus.COMPLETED,
+      },
+      include: {
+        scores: {
+          include: {
+            criterion: true,
+          },
+        },
+        modelTestResults: true,
+      },
+    });
+
+    if (cachedSubmission) {
+      console.log("🎯 Cache Hit: Reusing existing submission grades.");
+      return NextResponse.json({
+        success: true,
+        cached: true,
+        submission: cachedSubmission,
+      });
+    }
+
+    // Parse test cases
+    const testCases: Record<string, string>[] = (challenge.testInputs as any) || [{}];
+    const testCase = testCases[0] || {};
+    const compiledPrompt = compilePrompt(promptText, testCase);
+
+    // Map targets dynamically depending on key availability
+    const geminiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    const isGeminiAvailable = geminiKey && !geminiKey.startsWith("your-") && !geminiKey.startsWith("dummy-");
+
+    const targetModel = isGeminiAvailable 
+      ? { provider: "Google", name: "gemini-flash-latest" }
+      : { provider: "OpenAI", name: "gpt-4o-mini" };
+
+    // Call execution
+    const modelExecution = await callModel(
+      targetModel.provider,
+      targetModel.name,
+      compiledPrompt,
+      challenge.systemPrompt || undefined
+    );
+
+    // Call judge
+    const judgeGrades = await callJudge(
+      criteria.map((c) => ({
+        name: c.name,
+        weight: c.weight,
+        description: c.description,
+      })),
+      promptText,
+      modelExecution.text
+    );
+
+    let totalScore = 0;
+    const finalScoresList = criteria.map((crit) => {
+      const judgeScore = judgeGrades.criteria_scores.find(
+        (s) => s.label.toLowerCase() === crit.name.toLowerCase()
+      );
+      const scoreValue = judgeScore ? judgeScore.score : 70;
+      const passed = scoreValue >= 70;
+
+      totalScore += scoreValue * (crit.weight / 100);
+
+      return {
+        criterionId: crit.id,
+        score: scoreValue,
+        passed,
+        feedback: judgeScore?.justification || "Meets criteria requirements.",
+      };
+    });
+
+    const isPassed = totalScore >= 70;
+
+    // Save
+    const submission = await prisma.$transaction(async (tx) => {
+      const createdSubmission = await tx.submission.create({
+        data: {
+          userId: finalUserId,
+          challengeId: challenge.id,
+          promptText: promptText.trim(),
+          status: SubmissionStatus.COMPLETED,
+          totalScore,
+          passed: isPassed,
+          tokenCount: modelExecution.tokenCount,
+          executionTime: modelExecution.executionTimeMs,
+        },
+      });
+
+      await tx.submissionScore.createMany({
+        data: finalScoresList.map((item) => ({
+          submissionId: createdSubmission.id,
+          criterionId: item.criterionId,
+          score: item.score,
+          passed: item.passed,
+          feedback: item.feedback,
+        })),
+      });
+
+      await tx.modelTestResult.create({
+        data: {
+          submissionId: createdSubmission.id,
+          modelProvider: targetModel.provider,
+          modelName: targetModel.name,
+          rawOutput: modelExecution.text,
+          latencyMs: modelExecution.executionTimeMs,
+          score: totalScore,
+          passed: isPassed,
+        },
+      });
+
+      return createdSubmission;
+    });
+
+    // Re-fetch formatted result
+    const fullSubmission = await prisma.submission.findUnique({
+      where: { id: submission.id },
+      include: {
+        scores: {
+          include: {
+            criterion: true,
+          },
+        },
+        modelTestResults: true,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      cached: false,
+      submission: fullSubmission,
+    });
+  } catch (error: any) {
+    console.error("Submission grading pipeline error:", error);
+    return NextResponse.json(
+      { error: error.message || "Failed to process submission grading" },
+      { status: 500 }
+    );
+  }
+}
