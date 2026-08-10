@@ -58,7 +58,7 @@ export function ChallengeWorkspace({
   const [selectedModel, setSelectedModel] = useState("gemini");
   const [crossModelEnabled, setCrossModelEnabled] = useState(false);
   const [hintsVisible, setHintsVisible] = useState(false);
-  const [activeTab, setActiveTab] = useState<"description" | "rubric">(
+  const [activeTab, setActiveTab] = useState<"description" | "rubric" | "solution">(
     "description"
   );
 
@@ -158,13 +158,14 @@ export function ChallengeWorkspace({
             {[
               { id: "description" as const, label: "Description" },
               { id: "rubric" as const, label: "Rubric" },
+              { id: "solution" as const, label: "Solution Framework" },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-5 py-3 text-sm font-medium transition-colors relative ${
                   activeTab === tab.id
-                    ? "text-white"
+                    ? "text-white font-semibold"
                     : "text-slate-500 hover:text-slate-300"
                 }`}
               >
@@ -321,6 +322,53 @@ export function ChallengeWorkspace({
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {activeTab === "solution" && (
+              <div className="space-y-4">
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-4 text-xs text-amber-300 flex items-center gap-2">
+                  <Award className="h-4 w-4 text-amber-400 shrink-0" />
+                  <span><strong>Editorial Solution Pattern:</strong> Review this expected prompt structure after attempting your own prompt template.</span>
+                </div>
+                {challenge.editorialSolution ? (
+                  <div className="prose prose-sm prose-invert max-w-none space-y-3">
+                    {challenge.editorialSolution.split("\n").map((line, i) => {
+                      if (line.startsWith("### ")) {
+                        return (
+                          <h3 key={i} className="text-base font-bold text-cyan-400 mt-6 mb-2">
+                            {line.replace("### ", "")}
+                          </h3>
+                        );
+                      }
+                      if (line.startsWith("#### ")) {
+                        return (
+                          <h4 key={i} className="text-sm font-bold text-white mt-4 mb-1">
+                            {line.replace("#### ", "")}
+                          </h4>
+                        );
+                      }
+                      if (line.startsWith("- ")) {
+                        return (
+                          <div key={i} className="flex items-start gap-2 text-sm text-slate-300 ml-2 my-1">
+                            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shrink-0 mt-2" />
+                            <span>{line.replace("- ", "")}</span>
+                          </div>
+                        );
+                      }
+                      if (line.trim() === "") return <div key={i} className="h-1" />;
+                      return (
+                        <p key={i} className="text-sm text-slate-300 leading-relaxed font-sans">
+                          {line}
+                        </p>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="rounded-lg bg-dark-800 border border-white/[0.04] p-6 text-center text-slate-400">
+                    <p className="text-sm">Editorial Solution Framework coming soon for this challenge.</p>
+                  </div>
+                )}
               </div>
             )}
           </div>
