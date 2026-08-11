@@ -13,13 +13,18 @@ function SignInForm() {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const urlError = searchParams.get("error");
+  const [error, setError] = useState<string | null>(
+    urlError === "CredentialsSignin" || urlError === "Configuration"
+      ? "Invalid email address or password. Please check your credentials or click 'Create Account' to sign up."
+      : urlError
+  );
   const [notice, setNotice] = useState<string | null>(null);
 
   const handleCredentialsSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      setError("Please enter both email and password.");
+      setError("Please enter both email address and password.");
       return;
     }
 
@@ -36,12 +41,12 @@ function SignInForm() {
       });
 
       if (result?.error) {
-        setError(result.error);
+        setError("Invalid email address or password. Please check your credentials or click 'Create Account' to sign up.");
       } else if (result?.url) {
         window.location.href = result.url;
       }
     } catch (err: any) {
-      setError(err.message || "Failed to sign in. Please check your credentials.");
+      setError("Invalid email address or password. Please check your credentials or click 'Create Account' to sign up.");
     } finally {
       setLoading(null);
     }

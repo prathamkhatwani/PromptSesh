@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { checkDbConnection } from "@/lib/queries";
+import { findMockUserByEmail, createMockUser } from "@/lib/mock-data";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
@@ -77,12 +78,27 @@ export async function POST(req: Request) {
     }
 
     // Mock fallback mode if database is offline
+    const existingMockUser = findMockUserByEmail(trimmedEmail);
+    if (existingMockUser) {
+      return NextResponse.json(
+        { error: "An account with this email address already exists. Please sign in." },
+        { status: 400 }
+      );
+    }
+
+    const passwordHash = bcrypt.hashSync(password, 10);
+    const mockUser = createMockUser({
+      name: trimmedName,
+      email: trimmedEmail,
+      passwordHash,
+    });
+
     return NextResponse.json({
       success: true,
       user: {
-        id: `mock-user-${Date.now()}`,
-        name: trimmedName || "Prompt Engineer",
-        email: trimmedEmail,
+        id: mockUser.id,
+        name: mockUser.name,
+        email: mockUser.email,
       },
     });
   } catch (error: any) {

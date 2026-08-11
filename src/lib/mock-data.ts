@@ -1,4 +1,39 @@
-// ── Types ──────────────────────────────────────────────────────────────────
+export interface MockUser {
+  id: string;
+  name: string;
+  email: string;
+  passwordHash?: string;
+  image?: string;
+  createdAt: Date;
+}
+
+export const mockUsers: MockUser[] = [
+  {
+    id: "usr_demo_101",
+    name: "Alex Rivera",
+    email: "engineer@promptsesh.com",
+    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
+    createdAt: new Date(),
+  },
+];
+
+export function findMockUserByEmail(email: string): MockUser | undefined {
+  const normalized = (email || "").toLowerCase().trim();
+  return mockUsers.find((u) => u.email.toLowerCase().trim() === normalized);
+}
+
+export function createMockUser(data: { name: string; email: string; passwordHash?: string }): MockUser {
+  const newUser: MockUser = {
+    id: `usr_${Date.now()}`,
+    name: data.name || "Prompt Engineer",
+    email: data.email.toLowerCase().trim(),
+    passwordHash: data.passwordHash,
+    image: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(data.name || data.email)}`,
+    createdAt: new Date(),
+  };
+  mockUsers.push(newUser);
+  return newUser;
+}
 
 export interface MockCategory {
   id: string;

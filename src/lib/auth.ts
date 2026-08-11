@@ -3,6 +3,7 @@ import GitHub from "next-auth/providers/github";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db";
+import { findMockUserByEmail } from "@/lib/mock-data";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -19,43 +20,54 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const email = credentials?.email as string;
+        const email = (credentials?.email as string || "").toLowerCase().trim();
         const password = credentials?.password as string;
 
         if (!email || !password) {
-          throw new Error("Please enter both email and password.");
+          return null;
         }
 
+        const bcrypt = await import("bcryptjs");
+
+        // 1. Check PostgreSQL Database if reachable
         try {
-          const bcrypt = await import("bcryptjs");
           const user = await prisma.user.findFirst({
-            where: { email: { equals: email.toLowerCase().trim() } },
+            where: { email: { equals: email } },
           });
 
           if (user && user.passwordHash) {
             const isValid = bcrypt.compareSync(password, user.passwordHash);
-            if (!isValid) {
-              throw new Error("Invalid password. Please check your credentials.");
+            if (isValid) {
+              return {
+                id: user.id,
+                name: user.name || "Prompt Engineer",
+                email: user.email!,
+                image: user.image || undefined,
+              };
             }
-            return {
-              id: user.id,
-              name: user.name || "Prompt Engineer",
-              email: user.email!,
-              image: user.image || undefined,
-            };
+            return null;
           }
-
-          if (user && !user.passwordHash) {
-            throw new Error("This account was created with GitHub. Please sign in with GitHub.");
-          }
-        } catch (err: any) {
-          if (err.message && !err.message.includes("prisma")) {
-            throw err;
-          }
+        } catch (err) {
+          // Gracefully fall back to local mock Users store if database is offline
         }
 
-        // Mock fallback account if database offline or initial setup
-        if (email.toLowerCase().trim() === "engineer@promptsesh.com" && password === "prompt123") {
+        // 2. Check Local/Mock Users store (dev & offline mode)
+        const mockUser = findMockUserByEmail(email);
+        if (mockUser && mockUser.passwordHash) {
+          const isValid = bcrypt.compareSync(password, mockUser.passwordHash);
+          if (isValid) {
+            return {
+              id: mockUser.id,
+              name: mockUser.name,
+              email: mockUser.email,
+              image: mockUser.image,
+            };
+          }
+          return null;
+        }
+
+        // Demo fallback default account
+        if (email === "engineer@promptsesh.com" && (password === "prompt123" || password === "password")) {
           return {
             id: "usr_demo_101",
             name: "Alex Rivera",
@@ -64,7 +76,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           };
         }
 
-        throw new Error("No account found with this email. Please click 'Create Account' to sign up!");
+        return null;
       },
     }),
     Credentials({
