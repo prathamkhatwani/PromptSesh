@@ -1,5 +1,5 @@
 import { getLeaderboardData } from "@/lib/queries";
-import { Trophy, Flame, Target, Award, Crown } from "lucide-react";
+import { Trophy, Crown } from "lucide-react";
 
 export default async function LeaderboardPage() {
   const leaderboard = await getLeaderboardData();
@@ -134,66 +134,78 @@ export default async function LeaderboardPage() {
         <div className="glass-card overflow-hidden">
           <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between">
             <h2 className="text-base font-bold text-white">Full Leaderboard Rankings</h2>
-            <span className="text-xs text-slate-500">Updated hourly</span>
+            <span className="text-xs text-slate-500">Live Updates</span>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="border-b border-white/[0.06] bg-dark-900/50 text-slate-500 font-medium uppercase tracking-wider">
-                <tr>
-                  <th className="px-6 py-3.5">Rank</th>
-                  <th className="px-6 py-3.5">Engineer</th>
-                  <th className="px-6 py-3.5">Badge Title</th>
-                  <th className="px-6 py-3.5">Solved</th>
-                  <th className="px-6 py-3.5">Accuracy</th>
-                  <th className="px-6 py-3.5">Streak</th>
-                  <th className="px-6 py-3.5 text-right">Points</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/[0.04] text-slate-300">
-                {leaderboard.map((user) => (
-                  <tr key={user.rank} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="px-6 py-4 font-mono font-bold text-slate-400">
-                      #{user.rank}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        {user.avatar ? (
-                          <img
-                            src={user.avatar}
-                            alt={user.name}
-                            className="h-8 w-8 rounded-full object-cover border border-white/10"
-                          />
-                        ) : (
-                          <div className="h-8 w-8 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center font-bold text-cyan-400">
-                            {user.name.charAt(0)}
-                          </div>
-                        )}
-                        <span className="font-semibold text-white">{user.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex rounded-md border border-white/[0.06] bg-white/[0.04] px-2.5 py-1 text-[10px] text-slate-400">
-                        {user.badge}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 font-mono text-white">
-                      {user.solvedCount}
-                    </td>
-                    <td className="px-6 py-4 font-mono text-emerald-400">
-                      {user.accuracyRate}%
-                    </td>
-                    <td className="px-6 py-4 font-mono text-amber-400 font-medium">
-                      🔥 {user.streakDays}d
-                    </td>
-                    <td className="px-6 py-4 text-right font-mono font-bold text-cyan-400">
-                      {user.totalPoints.toLocaleString()}
-                    </td>
+          {leaderboard.length === 0 ? (
+            <div className="p-12 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 mx-auto mb-4">
+                <Trophy className="h-6 w-6" />
+              </div>
+              <h3 className="text-base font-bold text-white mb-1">No Leaderboard Rankings Yet</h3>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto mb-6">
+                Be the first engineer to solve prompt challenges and claim the #1 spot on the global leaderboard!
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="border-b border-white/[0.06] bg-dark-900/50 text-slate-500 font-medium uppercase tracking-wider">
+                  <tr>
+                    <th className="px-6 py-3.5">Rank</th>
+                    <th className="px-6 py-3.5">Engineer</th>
+                    <th className="px-6 py-3.5">Badge Title</th>
+                    <th className="px-6 py-3.5">Solved</th>
+                    <th className="px-6 py-3.5">Accuracy</th>
+                    <th className="px-6 py-3.5">Streak</th>
+                    <th className="px-6 py-3.5 text-right">Points</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-white/[0.04] text-slate-300">
+                  {remaining.map((user) => (
+                    <tr key={user.rank} className="hover:bg-white/[0.02] transition-colors">
+                      <td className="px-6 py-4 font-mono font-bold text-slate-400">
+                        #{user.rank}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          {user.avatar ? (
+                            <img
+                              src={user.avatar}
+                              alt={user.name}
+                              className="h-8 w-8 rounded-full object-cover border border-white/10"
+                            />
+                          ) : (
+                            <div className="h-8 w-8 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center font-bold text-cyan-400">
+                              {user.name.charAt(0)}
+                            </div>
+                          )}
+                          <span className="font-semibold text-white">{user.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex rounded-md border border-white/[0.06] bg-white/[0.04] px-2.5 py-1 text-[10px] text-slate-400">
+                          {user.badge}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 font-mono text-white">
+                        {user.solvedCount}
+                      </td>
+                      <td className="px-6 py-4 font-mono text-emerald-400">
+                        {user.accuracyRate}%
+                      </td>
+                      <td className="px-6 py-4 font-mono text-amber-400 font-medium">
+                        🔥 {user.streakDays}d
+                      </td>
+                      <td className="px-6 py-4 text-right font-mono font-bold text-cyan-400">
+                        {user.totalPoints.toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -23,13 +23,10 @@ export function Footer() {
             </p>
             <div className="flex items-center gap-3 mt-4">
               <a
-                href="#"
-                className="text-slate-500 hover:text-slate-300 transition-colors"
-              >
-                <ExternalLink className="h-4 w-4" />
-              </a>
-              <a
-                href="#"
+                href="https://github.com/prathamkhatwani/PromptSesh"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="GitHub Repository"
                 className="text-slate-500 hover:text-slate-300 transition-colors"
               >
                 <ExternalLink className="h-4 w-4" />
@@ -43,24 +40,21 @@ export function Footer() {
               title: "Practice",
               links: [
                 { href: "/challenges", label: "All Challenges" },
-                { href: "/categories", label: "Categories" },
+                { href: "/interview-simulator", label: "Mock Interviews" },
                 { href: "/leaderboard", label: "Leaderboard" },
               ],
             },
             {
-              title: "Resources",
+              title: "Account",
               links: [
-                { href: "#", label: "Documentation" },
-                { href: "#", label: "Blog" },
-                { href: "#", label: "Community" },
+                { href: "/profile", label: "Your Profile" },
+                { href: "/auth/signin", label: "Sign In" },
               ],
             },
             {
-              title: "Company",
+              title: "Project",
               links: [
-                { href: "#", label: "About" },
-                { href: "#", label: "Privacy" },
-                { href: "#", label: "Terms" },
+                { href: "https://github.com/prathamkhatwani/PromptSesh", label: "GitHub" },
               ],
             },
           ].map((section) => (
@@ -71,12 +65,23 @@ export function Footer() {
               <ul className="space-y-2">
                 {section.links.map((link) => (
                   <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-slate-500 hover:text-slate-300 transition-colors"
-                    >
-                      {link.label}
-                    </Link>
+                    {link.href.startsWith("http") ? (
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-slate-500 hover:text-slate-300 transition-colors"
+                      >
+                        {link.label}
+                      </a>
+                    ) : (
+                      <Link
+                        href={link.href}
+                        className="text-sm text-slate-500 hover:text-slate-300 transition-colors"
+                      >
+                        {link.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>

@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/footer";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXTAUTH_URL || "https://promptsesh.com"),
   title: "PromptSesh — Master Prompt Engineering",
   description:
     "The #1 practice platform for prompt engineering. Solve challenges, get AI-graded feedback, and prove your skills across LLMs.",
@@ -15,7 +16,23 @@ export const metadata: Metadata = {
     "practice",
     "challenges",
     "grading",
+    "interview prep",
   ],
+  openGraph: {
+    title: "PromptSesh — Master Prompt Engineering",
+    description: "The #1 practice platform for prompt engineering. Solve challenges & simulate AI interviews.",
+    siteName: "PromptSesh",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PromptSesh — Master Prompt Engineering",
+    description: "The #1 practice platform for prompt engineering.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

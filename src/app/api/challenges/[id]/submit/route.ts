@@ -38,7 +38,6 @@ export async function POST(
 
     // ───────────────── OFFLINE / MOCK DATABASE FALLBACK ─────────────────
     if (!isDbConnected) {
-      console.log("⚠️ Database down. Operating in offline submission grading mode.");
       
       // Look up challenge from mock-data by ID or Slug
       const mockChallenge = mock.challenges.find(c => c.id === id || c.slug === id);
@@ -88,7 +87,7 @@ export async function POST(
 
       const mockSubmission = {
         id: "mock-sub-id",
-        userId: "dev-user-id",
+        userId: "anonymous",
         challengeId: id,
         promptText,
         status: "COMPLETED",
@@ -101,8 +100,8 @@ export async function POST(
           {
             id: "mock-res-id",
             submissionId: "mock-sub-id",
-            modelProvider: "OpenAI",
-            modelName: "gpt-4o-mini",
+            modelProvider: "Google",
+            modelName: "gemini-1.5-flash",
             rawOutput: modelExecution.text,
             latencyMs: modelExecution.executionTimeMs,
             score: totalScore,
@@ -111,6 +110,11 @@ export async function POST(
         ],
         cached: false,
       };
+
+      // Increment live mock challenge counter
+      mockChallenge.totalSubmissions = (mockChallenge.totalSubmissions || 0) + 1;
+      const isPassed = mockSubmission.passed;
+      mockChallenge.acceptanceRate = isPassed ? 100 : 0;
 
       return NextResponse.json({
         success: true,
@@ -137,7 +141,7 @@ export async function POST(
         create: {
           id: finalUserId,
           name: "Developer",
-          email: "dev@promptcode.local",
+          email: "dev@promptsesh.dev",
         },
       });
     }
@@ -187,7 +191,6 @@ export async function POST(
     });
 
     if (cachedSubmission) {
-      console.log("🎯 Cache Hit: Reusing existing submission grades.");
       return NextResponse.json({
         success: true,
         cached: true,
@@ -281,6 +284,13 @@ export async function POST(
           latencyMs: modelExecution.executionTimeMs,
           score: totalScore,
           passed: isPassed,
+        },
+      });
+
+      await tx.challenge.update({
+        where: { id: challenge.id },
+        data: {
+          totalSubmissions: { increment: 1 },
         },
       });
 

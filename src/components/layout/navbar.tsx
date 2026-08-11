@@ -31,6 +31,7 @@ export function Navbar() {
           <div className="hidden md:flex items-center gap-1">
             {[
               { href: "/challenges", label: "Challenges" },
+              { href: "/interview-simulator", label: "Interview" },
               { href: "/leaderboard", label: "Leaderboard" },
               { href: "/profile", label: "Profile" },
             ].map((link) => (
@@ -111,8 +112,9 @@ export function Navbar() {
           <div className="md:hidden border-t border-white/[0.06] py-4 space-y-1">
             {[
               { href: "/challenges", label: "Challenges" },
-              { href: "/categories", label: "Categories" },
+              { href: "/interview-simulator", label: "Interview" },
               { href: "/leaderboard", label: "Leaderboard" },
+              { href: "/profile", label: "Profile" },
             ].map((link) => (
               <Link
                 key={link.href}

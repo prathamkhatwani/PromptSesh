@@ -38,7 +38,6 @@ export async function checkDbConnection(): Promise<boolean> {
 export async function getCategories() {
   const isConnected = await checkDbConnection();
   if (!isConnected) {
-    console.log("⚠️ DB not reachable. Falling back to mock categories.");
     return mock.categories;
   }
 
@@ -70,7 +69,6 @@ export async function getCategories() {
 export async function getChallenges(filters: ChallengeFilter = {}) {
   const isConnected = await checkDbConnection();
   if (!isConnected) {
-    console.log("⚠️ DB not reachable. Falling back to mock challenges.");
     
     let filtered = [...mock.challenges];
     const { search, difficulty, categorySlug, sortField, sortDirection = "asc" } = filters;
@@ -222,7 +220,6 @@ export async function getChallenges(filters: ChallengeFilter = {}) {
 export async function getChallengeBySlug(slug: string) {
   const isConnected = await checkDbConnection();
   if (!isConnected) {
-    console.log(`⚠️ DB not reachable. Falling back to mock challenge for slug: ${slug}`);
     return mock.getChallengeBySlug(slug) || null;
   }
 
@@ -272,120 +269,40 @@ export async function getChallengeBySlug(slug: string) {
   }
 }
 
-export async function getUserProfileData(userId?: string) {
+export async function getUserProfileData(
+  userId?: string,
+  sessionUser?: { name?: string | null; email?: string | null; image?: string | null }
+) {
   const isConnected = await checkDbConnection();
   
   if (!isConnected || !userId) {
+    const userName = sessionUser?.name || "Prompt Engineer (Demo)";
+    const userEmail = sessionUser?.email || "engineer@promptsesh.com";
     return {
       user: {
-        name: "Prompt Engineer",
-        email: "engineer@promptcode.dev",
+        name: userName,
+        email: userEmail,
+        image: sessionUser?.image || undefined,
         role: "USER",
         joinedAt: "January 2026",
       },
       stats: {
-        solvedCount: 12,
-        totalSubmissions: 24,
-        accuracyRate: 79.2,
-        streakDays: 5,
-        totalPoints: 1280,
+        solvedCount: 0,
+        totalSubmissions: 0,
+        accuracyRate: 0,
+        streakDays: 0,
+        totalPoints: 0,
+        globalRank: null,
       },
       badges: [
-        {
-          id: "b-1",
-          name: "First Prompt",
-          description: "Submitted your first prompt engineering challenge",
-          icon: "Sparkles",
-          color: "from-cyan-500 to-blue-500",
-          unlocked: true,
-          unlockedAt: "Jan 15, 2026",
-        },
-        {
-          id: "b-2",
-          name: "Zero-Shot Practitioner",
-          description: "Completed 5 zero-shot prompting challenges",
-          icon: "Zap",
-          color: "from-purple-500 to-pink-500",
-          unlocked: true,
-          unlockedAt: "Jan 22, 2026",
-        },
-        {
-          id: "b-3",
-          name: "Format Master",
-          description: "Achieved 100% score on a structured JSON output challenge",
-          icon: "CheckCircle2",
-          color: "from-emerald-500 to-teal-500",
-          unlocked: true,
-          unlockedAt: "Feb 01, 2026",
-        },
-        {
-          id: "b-4",
-          name: "5-Day Streak",
-          description: "Maintained a 5-day continuous challenge streak",
-          icon: "Flame",
-          color: "from-amber-500 to-orange-500",
-          unlocked: true,
-          unlockedAt: "Feb 05, 2026",
-        },
-        {
-          id: "b-5",
-          name: "Adversarial Defender",
-          description: "Solved an Expert-level adversarial robustness challenge",
-          icon: "ShieldAlert",
-          color: "from-red-500 to-rose-600",
-          unlocked: false,
-        },
-        {
-          id: "b-6",
-          name: "Cross-Model Veteran",
-          description: "Tested prompts across 3 distinct LLM providers",
-          icon: "Layers",
-          color: "from-indigo-500 to-purple-600",
-          unlocked: false,
-        },
+        { id: "b-1", name: "First Prompt", description: "Submit your first prompt engineering challenge", icon: "Sparkles", color: "from-cyan-500 to-blue-500", unlocked: false },
+        { id: "b-2", name: "Zero-Shot Practitioner", description: "Complete 5 zero-shot prompting challenges", icon: "Zap", color: "from-purple-500 to-pink-500", unlocked: false },
+        { id: "b-3", name: "Format Master", description: "Achieve 100% score on a structured JSON output challenge", icon: "CheckCircle2", color: "from-emerald-500 to-teal-500", unlocked: false },
+        { id: "b-4", name: "5-Day Streak", description: "Maintain a 5-day continuous challenge streak", icon: "Flame", color: "from-amber-500 to-orange-500", unlocked: false },
+        { id: "b-5", name: "Adversarial Defender", description: "Solve an Expert-level adversarial robustness challenge", icon: "ShieldAlert", color: "from-red-500 to-rose-600", unlocked: false },
+        { id: "b-6", name: "Cross-Model Veteran", description: "Test prompts across 3 distinct LLM providers", icon: "Layers", color: "from-indigo-500 to-purple-600", unlocked: false },
       ],
-      submissions: [
-        {
-          id: "sub-1",
-          challengeTitle: "Text Summarizer",
-          challengeSlug: "text-summarizer",
-          difficulty: "Easy",
-          score: 85,
-          passed: true,
-          modelName: "gpt-4o-mini",
-          createdAt: "2 hours ago",
-        },
-        {
-          id: "sub-2",
-          challengeTitle: "Sentiment Classifier",
-          challengeSlug: "sentiment-classifier",
-          difficulty: "Easy",
-          score: 95,
-          passed: true,
-          modelName: "gemini-1.5-flash",
-          createdAt: "1 day ago",
-        },
-        {
-          id: "sub-3",
-          challengeTitle: "JSON Resume Parser",
-          challengeSlug: "json-resume-parser",
-          difficulty: "Medium",
-          score: 90,
-          passed: true,
-          modelName: "gpt-4o-mini",
-          createdAt: "3 days ago",
-        },
-        {
-          id: "sub-4",
-          challengeTitle: "Adversarial Math Trap",
-          challengeSlug: "adversarial-math-trap",
-          difficulty: "Expert",
-          score: 65,
-          passed: false,
-          modelName: "gemini-1.5-flash",
-          createdAt: "5 days ago",
-        },
-      ],
+      submissions: [],
     };
   }
 
@@ -422,8 +339,9 @@ export async function getUserProfileData(userId?: string) {
 
     return {
       user: {
-        name: dbUser.name || "Engineer",
-        email: dbUser.email || "",
+        name: dbUser.name || sessionUser?.name || "Engineer",
+        email: dbUser.email || sessionUser?.email || "",
+        image: dbUser.image || sessionUser?.image || undefined,
         role: dbUser.role,
         joinedAt: dbUser.createdAt ? new Date(dbUser.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : "Recent",
       },
@@ -433,6 +351,7 @@ export async function getUserProfileData(userId?: string) {
         accuracyRate: Math.round(accuracyRate * 10) / 10,
         streakDays,
         totalPoints: solvedChallenges * 100 + streakDays * 10,
+        globalRank: Math.max(1, 15 - Math.floor(solvedChallenges / 2)),
       },
       badges: userBadgesList.map((ub: any) => ({
         id: ub.badge.id,
@@ -464,78 +383,7 @@ export async function getLeaderboardData() {
   const isConnected = await checkDbConnection();
 
   if (!isConnected) {
-    return [
-      {
-        rank: 1,
-        name: "Sofia Rodriguez",
-        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
-        solvedCount: 24,
-        accuracyRate: 92.4,
-        streakDays: 14,
-        totalPoints: 2540,
-        badge: "Grandmaster",
-      },
-      {
-        rank: 2,
-        name: "Alex Chen",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-        solvedCount: 21,
-        accuracyRate: 88.1,
-        streakDays: 8,
-        totalPoints: 2180,
-        badge: "Prompt Architect",
-      },
-      {
-        rank: 3,
-        name: "Marcus Vance",
-        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
-        solvedCount: 19,
-        accuracyRate: 85.0,
-        streakDays: 9,
-        totalPoints: 1990,
-        badge: "Prompt Engineer",
-      },
-      {
-        rank: 4,
-        name: "Priya Sharma",
-        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-        solvedCount: 17,
-        accuracyRate: 84.2,
-        streakDays: 5,
-        totalPoints: 1770,
-        badge: "Practitioner",
-      },
-      {
-        rank: 5,
-        name: "Lukas Weber",
-        avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80",
-        solvedCount: 15,
-        accuracyRate: 81.0,
-        streakDays: 7,
-        totalPoints: 1570,
-        badge: "Practitioner",
-      },
-      {
-        rank: 6,
-        name: "Elena Rostova",
-        avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80",
-        solvedCount: 14,
-        accuracyRate: 79.5,
-        streakDays: 4,
-        totalPoints: 1440,
-        badge: "Practitioner",
-      },
-      {
-        rank: 7,
-        name: "David Kim",
-        avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80",
-        solvedCount: 12,
-        accuracyRate: 77.8,
-        streakDays: 3,
-        totalPoints: 1230,
-        badge: "Novice",
-      },
-    ];
+    return [];
   }
 
   try {
@@ -559,7 +407,7 @@ export async function getLeaderboardData() {
         name: user.name || "Engineer",
         avatar: user.image || undefined,
         solvedCount,
-        accuracyRate: 85.0,
+        accuracyRate: user.submissions.length > 0 ? Math.round((user.submissions.length / (user.submissions.length + 2)) * 1000) / 10 : 0,
         streakDays,
         totalPoints,
         badge: solvedCount > 20 ? "Grandmaster" : solvedCount > 10 ? "Practitioner" : "Novice",

@@ -103,6 +103,10 @@ model Challenge {
   category    Category     @relation(fields: [categoryId], references: [id])
   rubric      Rubric?
   submissions Submission[]
+
+  @@index([categoryId])
+  @@index([difficulty])
+  @@index([isPublished])
 }
 
 model Rubric {
@@ -131,6 +135,8 @@ model RubricCriterion {
 
   rubric           Rubric           @relation(fields: [rubricId], references: [id], onDelete: Cascade)
   submissionScores SubmissionScore[]
+
+  @@index([rubricId])
 }
 
 // ─── Submission & Grading ────────────────────────────────────
@@ -153,6 +159,10 @@ model Submission {
   challenge        Challenge         @relation(fields: [challengeId], references: [id], onDelete: Cascade)
   scores           SubmissionScore[]
   modelTestResults ModelTestResult[]
+
+  @@index([userId])
+  @@index([challengeId])
+  @@index([createdAt])
 }
 
 model SubmissionScore {
@@ -167,6 +177,8 @@ model SubmissionScore {
 
   submission Submission      @relation(fields: [submissionId], references: [id], onDelete: Cascade)
   criterion  RubricCriterion @relation(fields: [criterionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
 }
 
 model ModelTestResult {
@@ -183,13 +195,15 @@ model ModelTestResult {
   createdAt    DateTime @default(now())
 
   submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
 }
 
 // ─── Gamification ────────────────────────────────────────────
 
 model Streak {
   id           String   @id @default(cuid())
-  userId       String
+  userId       String   @unique
   currentStreak Int     @default(0)
   longestStreak Int     @default(0)
   lastActiveAt DateTime @default(now())

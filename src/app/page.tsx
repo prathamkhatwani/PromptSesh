@@ -16,7 +16,7 @@ import {
   Layers,
   type LucideIcon,
 } from "lucide-react";
-import { getCategories } from "@/lib/queries";
+import { getChallenges, getCategories } from "@/lib/queries";
 
 const iconMap: Record<string, LucideIcon> = {
   Zap,
@@ -30,11 +30,6 @@ const iconMap: Record<string, LucideIcon> = {
   MessageSquare,
 };
 
-const stats = [
-  { label: "Challenges", value: "500+" },
-  { label: "Engineers", value: "10k+" },
-  { label: "Skill Categories", value: "9" },
-];
 
 const steps = [
   {
@@ -88,7 +83,10 @@ const features = [
 ];
 
 export default async function HomePage() {
-  const categories = await getCategories();
+  const [challenges, categories] = await Promise.all([
+    getChallenges(),
+    getCategories(),
+  ]);
   return (
     <div className="relative">
       {/* ── Hero Section ─────────────────────────────────── */}
@@ -138,7 +136,11 @@ export default async function HomePage() {
 
             {/* Stats */}
             <div className="flex items-center justify-center gap-8 sm:gap-16">
-              {stats.map((stat) => (
+              {[
+                { label: "Prompt Challenges", value: `${challenges.length}+` },
+                { label: "Skill Categories", value: `${categories.length}` },
+                { label: "Rubric Evals", value: "Multi-Model" },
+              ].map((stat) => (
                 <div key={stat.label} className="text-center">
                   <div className="text-2xl sm:text-3xl font-bold text-white">
                     {stat.value}
@@ -158,7 +160,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-              9 Skill Categories
+              {categories.length} Skill Categories
             </h2>
             <p className="text-lg text-slate-400 max-w-2xl mx-auto">
               Organized by real prompt engineering skills — not just difficulty.
@@ -167,7 +169,7 @@ export default async function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {categories.map((cat) => {
+            {categories.map((cat: any) => {
               const Icon = iconMap[cat.icon] || Zap;
               return (
                 <Link
@@ -304,7 +306,7 @@ export default async function HomePage() {
                 Ready to level up?
               </h2>
               <p className="text-lg text-slate-400 mb-8 max-w-lg mx-auto">
-                Join thousands of engineers mastering prompt engineering. Start
+                Start mastering prompt engineering today. Begin
                 with Easy challenges and work your way to Expert.
               </p>
               <Link

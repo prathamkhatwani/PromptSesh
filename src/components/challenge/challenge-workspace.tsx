@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
-  ChevronDown,
   ChevronRight,
   Play,
   Send,
@@ -15,7 +14,6 @@ import {
   Users,
   CheckCircle2,
   XCircle,
-  Info,
   Loader2,
   ChevronUp,
   Award,
@@ -24,6 +22,7 @@ import {
 } from "lucide-react";
 import { getDifficultyBg } from "@/lib/utils";
 import type { MockChallenge } from "@/lib/mock-data";
+import { generateSolutionFramework } from "@/lib/scraper";
 
 const models = [
   { id: "claude", name: "Claude 3.5 Sonnet", provider: "Anthropic", color: "#d4a574" },
@@ -39,6 +38,9 @@ export function ChallengeWorkspace({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [promptText, setPromptText] = useState(() => {
+    if (challenge.starterPrompt) {
+      return challenge.starterPrompt;
+    }
     let variablesText = "";
     if (challenge.testInputs && challenge.testInputs[0]) {
       variablesText = Object.keys(challenge.testInputs[0])
@@ -68,6 +70,9 @@ export function ChallengeWorkspace({
   const [consoleTab, setConsoleTab] = useState<"testcase" | "output" | "grading">("testcase");
   const [gradingResult, setGradingResult] = useState<any>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const [submissionCount, setSubmissionCount] = useState(challenge.totalSubmissions || 0);
+  const [currentAcceptance, setCurrentAcceptance] = useState(challenge.acceptanceRate || 0);
 
   const tokenEstimate = Math.ceil(promptText.split(/\s+/).filter(Boolean).length * 1.3);
 
@@ -104,8 +109,17 @@ export function ChallengeWorkspace({
       }
 
       setGradingResult(data.submission);
+
+      // Increment live submission count
+      const newCount = submissionCount + 1;
+      const isPassed = data.submission?.passed;
+      const prevPassed = Math.round((currentAcceptance / 100) * submissionCount);
+      const newPassed = prevPassed + (isPassed ? 1 : 0);
+      const newRate = Math.round((newPassed / newCount) * 1000) / 10;
+
+      setSubmissionCount(newCount);
+      setCurrentAcceptance(newRate);
     } catch (err: any) {
-      console.error(err);
       setErrorMsg(err.message || "An error occurred during submission evaluation.");
       setConsoleTab("testcase");
     } finally {
@@ -139,12 +153,12 @@ export function ChallengeWorkspace({
         </div>
         <div className="flex items-center gap-4 text-xs text-slate-500">
           <span className="hidden sm:flex items-center gap-1">
-            <BarChart3 className="h-3.5 w-3.5" />
-            {challenge.acceptanceRate}% acceptance
+            <BarChart3 className="h-3.5 w-3.5 text-cyan-400" />
+            {submissionCount > 0 ? `${currentAcceptance}% acceptance` : "N/A acceptance"}
           </span>
           <span className="hidden sm:flex items-center gap-1">
-            <Users className="h-3.5 w-3.5" />
-            {challenge.totalSubmissions.toLocaleString()} submissions
+            <Users className="h-3.5 w-3.5 text-purple-400" />
+            {submissionCount > 0 ? `${submissionCount.toLocaleString()} submissions` : "0 submissions"}
           </span>
         </div>
       </div>
@@ -331,44 +345,43 @@ export function ChallengeWorkspace({
                   <Award className="h-4 w-4 text-amber-400 shrink-0" />
                   <span><strong>Editorial Solution Pattern:</strong> Review this expected prompt structure after attempting your own prompt template.</span>
                 </div>
-                {challenge.editorialSolution ? (
-                  <div className="prose prose-sm prose-invert max-w-none space-y-3">
-                    {challenge.editorialSolution.split("\n").map((line, i) => {
-                      if (line.startsWith("### ")) {
+                {(() => {
+                  const solutionText = challenge.editorialSolution || generateSolutionFramework(challenge.title, challenge.category);
+                  return (
+                    <div className="prose prose-sm prose-invert max-w-none space-y-3">
+                      {solutionText.split("\n").map((line, i) => {
+                        if (line.startsWith("### ")) {
+                          return (
+                            <h3 key={i} className="text-base font-bold text-cyan-400 mt-6 mb-2">
+                              {line.replace("### ", "")}
+                            </h3>
+                          );
+                        }
+                        if (line.startsWith("#### ")) {
+                          return (
+                            <h4 key={i} className="text-sm font-bold text-white mt-4 mb-1">
+                              {line.replace("#### ", "")}
+                            </h4>
+                          );
+                        }
+                        if (line.startsWith("- ")) {
+                          return (
+                            <div key={i} className="flex items-start gap-2 text-sm text-slate-300 ml-2 my-1">
+                              <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shrink-0 mt-2" />
+                              <span>{line.replace("- ", "")}</span>
+                            </div>
+                          );
+                        }
+                        if (line.trim() === "") return <div key={i} className="h-1" />;
                         return (
-                          <h3 key={i} className="text-base font-bold text-cyan-400 mt-6 mb-2">
-                            {line.replace("### ", "")}
-                          </h3>
+                          <p key={i} className="text-sm text-slate-300 leading-relaxed font-sans">
+                            {line}
+                          </p>
                         );
-                      }
-                      if (line.startsWith("#### ")) {
-                        return (
-                          <h4 key={i} className="text-sm font-bold text-white mt-4 mb-1">
-                            {line.replace("#### ", "")}
-                          </h4>
-                        );
-                      }
-                      if (line.startsWith("- ")) {
-                        return (
-                          <div key={i} className="flex items-start gap-2 text-sm text-slate-300 ml-2 my-1">
-                            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shrink-0 mt-2" />
-                            <span>{line.replace("- ", "")}</span>
-                          </div>
-                        );
-                      }
-                      if (line.trim() === "") return <div key={i} className="h-1" />;
-                      return (
-                        <p key={i} className="text-sm text-slate-300 leading-relaxed font-sans">
-                          {line}
-                        </p>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="rounded-lg bg-dark-800 border border-white/[0.04] p-6 text-center text-slate-400">
-                    <p className="text-sm">Editorial Solution Framework coming soon for this challenge.</p>
-                  </div>
-                )}
+                      })}
+                    </div>
+                  );
+                })()}
               </div>
             )}
           </div>

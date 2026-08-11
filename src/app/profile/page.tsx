@@ -2,7 +2,6 @@ import { auth } from "@/lib/auth";
 import { getUserProfileData } from "@/lib/queries";
 import Link from "next/link";
 import {
-  User as UserIcon,
   Flame,
   Trophy,
   Target,
@@ -30,7 +29,7 @@ const badgeIconMap: Record<string, any> = {
 export default async function ProfilePage() {
   const session = await auth();
   const userId = session?.user?.id;
-  const profile = await getUserProfileData(userId);
+  const profile = await getUserProfileData(userId, session?.user);
 
   if (!profile) {
     return (
@@ -61,9 +60,17 @@ export default async function ProfilePage() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div className="flex items-center gap-5">
               <div className="relative">
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-purple-600 shadow-xl shadow-cyan-500/20 text-white font-bold text-2xl">
-                  {user.name.charAt(0)}
-                </div>
+                {user.image ? (
+                  <img
+                    src={user.image}
+                    alt={user.name}
+                    className="h-20 w-20 rounded-2xl object-cover border-2 border-cyan-500/30 shadow-xl shadow-cyan-500/20"
+                  />
+                ) : (
+                  <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-purple-600 shadow-xl shadow-cyan-500/20 text-white font-bold text-2xl">
+                    {user.name.charAt(0)}
+                  </div>
+                )}
                 <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 text-dark-950 font-black text-xs shadow-md">
                   🔥
                 </div>
@@ -104,7 +111,7 @@ export default async function ProfilePage() {
             <div className="text-3xl font-extrabold text-white mb-1">
               {stats.solvedCount}
             </div>
-            <div className="text-xs text-slate-500">Across 9 skill categories</div>
+            <div className="text-xs text-slate-500">Across all skill categories</div>
           </div>
 
           <div className="glass-card p-5">
@@ -143,7 +150,9 @@ export default async function ProfilePage() {
             <div className="text-3xl font-extrabold text-white mb-1">
               {stats.totalPoints.toLocaleString()} <span className="text-xs font-normal text-slate-400">Pts</span>
             </div>
-            <div className="text-xs text-slate-500">Global Rank #2</div>
+            <div className="text-xs text-slate-500">
+              {stats.globalRank ? `Global Rank #${stats.globalRank}` : "Top 1% Rank"}
+            </div>
           </div>
         </div>
 

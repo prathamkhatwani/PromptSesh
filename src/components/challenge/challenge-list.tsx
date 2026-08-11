@@ -4,7 +4,6 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
   Search,
-  ChevronDown,
   CheckCircle2,
   Lock,
   ArrowUpDown,
@@ -35,6 +34,7 @@ interface Challenge {
 interface ChallengeListProps {
   initialChallenges: Challenge[];
   initialCategories: Category[];
+  initialCategoryFilter?: string;
 }
 
 const difficulties = ["All", "EASY", "MEDIUM", "HARD", "EXPERT"] as const;
@@ -45,10 +45,19 @@ type SortDirection = "asc" | "desc";
 export function ChallengeList({
   initialChallenges,
   initialCategories,
+  initialCategoryFilter,
 }: ChallengeListProps) {
   const [search, setSearch] = useState("");
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("All");
-  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  
+  // Find matching category name from slug if passed
+  const matchingCat = initialCategoryFilter
+    ? initialCategories.find((c) => c.slug === initialCategoryFilter || c.name.toLowerCase() === initialCategoryFilter.toLowerCase())
+    : null;
+    
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    matchingCat ? matchingCat.slug : "All"
+  );
   const [sortField, setSortField] = useState<SortField>("title");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
@@ -343,12 +352,12 @@ export function ChallengeList({
 
                 {/* Acceptance Rate */}
                 <div className="text-sm text-slate-400">
-                  {challenge.acceptanceRate}%
+                  {challenge.totalSubmissions > 0 ? `${challenge.acceptanceRate}%` : "New"}
                 </div>
 
                 {/* Submissions */}
-                <div className="text-sm text-slate-400">
-                  {formatNumber(challenge.totalSubmissions)}
+                <div className="text-sm text-slate-400 font-mono">
+                  {challenge.totalSubmissions > 0 ? formatNumber(challenge.totalSubmissions) : "0"}
                 </div>
               </Link>
             ))
