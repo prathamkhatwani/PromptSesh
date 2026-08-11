@@ -84,7 +84,7 @@ export function Navbar() {
                   Sign In
                 </Link>
                 <Link
-                  href="/auth/signin"
+                  href="/auth/signup"
                   className="group relative inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-500/25 transition-all hover:shadow-cyan-500/40 hover:brightness-110"
                 >
                   Get Started
