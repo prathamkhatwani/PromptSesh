@@ -19,6 +19,10 @@ import {
   Award,
   BookOpen,
   Sparkles,
+  Copy,
+  Check,
+  RotateCcw,
+  Lightbulb,
 } from "lucide-react";
 import { getDifficultyBg } from "@/lib/utils";
 import type { MockChallenge } from "@/lib/mock-data";
@@ -58,9 +62,43 @@ export function ChallengeWorkspace({
   const [selectedModel, setSelectedModel] = useState("llama-3.3-70b");
   const [crossModelEnabled, setCrossModelEnabled] = useState(false);
   const [hintsVisible, setHintsVisible] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<"description" | "rubric" | "solution">(
     "description"
   );
+
+  const getInitialVariables = () => {
+    let variablesText = "";
+    if (challenge.testInputs && challenge.testInputs[0]) {
+      variablesText = Object.keys(challenge.testInputs[0])
+        .map((key) => `${key.charAt(0).toUpperCase() + key.slice(1)}: {{${key}}}`)
+        .join("\n");
+    }
+    return variablesText ? `\n\n${variablesText}` : "";
+  };
+
+  const copyToClipboard = () => {
+    if (!promptText) return;
+    navigator.clipboard.writeText(promptText);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const resetPrompt = () => {
+    setPromptText(getInitialVariables());
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+      textareaRef.current.setSelectionRange(0, 0);
+    }
+  };
+
+  const loadGoldenPrompt = () => {
+    const defaultGolden = `You are a high-accuracy prompt engineering specialist. Analyze the input carefully and provide structured, precise output strictly following constraints.\n${getInitialVariables()}`;
+    setPromptText(challenge.editorialSolution || defaultGolden);
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  };
 
   // Grading API states
   const [loading, setLoading] = useState(false);
@@ -343,9 +381,18 @@ export function ChallengeWorkspace({
 
             {activeTab === "solution" && (
               <div className="space-y-4">
-                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-4 text-xs text-amber-300 flex items-center gap-2">
-                  <Award className="h-4 w-4 text-amber-400 shrink-0" />
-                  <span><strong>Editorial Solution Pattern:</strong> Review this expected prompt structure after attempting your own prompt template.</span>
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-4 text-xs text-amber-300 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <Award className="h-4 w-4 text-amber-400 shrink-0" />
+                    <span><strong>Editorial Solution Pattern:</strong> Review this expected prompt structure after attempting your own prompt template.</span>
+                  </div>
+                  <button
+                    onClick={loadGoldenPrompt}
+                    className="inline-flex items-center gap-1.5 shrink-0 rounded-lg bg-amber-500/20 border border-amber-500/30 px-3 py-1.5 text-xs font-semibold text-amber-300 hover:bg-amber-500/30 hover:text-white transition-all cursor-pointer"
+                  >
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Load Golden Prompt
+                  </button>
                 </div>
                 {(() => {
                   const solutionText = challenge.editorialSolution || generateSolutionFramework(challenge.title, challenge.category);
@@ -439,9 +486,38 @@ export function ChallengeWorkspace({
               <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">
                 Your Prompt Template
               </label>
-              <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
-                <Clock className="h-3.5 w-3.5" />
-                ~{tokenEstimate} tokens
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={copyToClipboard}
+                  title="Copy Prompt Template"
+                  className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-cyan-400 px-2 py-1 rounded bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] transition-all cursor-pointer"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="h-3.5 w-3.5 text-emerald-400" />
+                      <span className="text-emerald-400">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3.5 w-3.5" />
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={resetPrompt}
+                  title="Reset Editor to Blank Template"
+                  className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-rose-400 px-2 py-1 rounded bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] transition-all cursor-pointer"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  <span>Reset</span>
+                </button>
+
+                <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono ml-1">
+                  <Clock className="h-3.5 w-3.5" />
+                  ~{tokenEstimate} tokens
+                </div>
               </div>
             </div>
 
