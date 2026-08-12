@@ -300,7 +300,7 @@ export default function InterviewSimulatorPage() {
               <button
                 key={company.id}
                 onClick={() => setSelectedCompany(company)}
-                className={`group relative text-left p-5 rounded-xl border transition-all duration-300 ${
+                className={`group relative text-left p-5 rounded-xl border transition-all duration-300 cursor-pointer ${
                   selectedCompany?.id === company.id
                     ? `border-white/20 bg-white/[0.06] shadow-lg`
                     : "border-white/[0.06] bg-dark-900 hover:border-white/[0.12] hover:bg-white/[0.03]"
@@ -337,7 +337,7 @@ export default function InterviewSimulatorPage() {
                 <button
                   key={diff}
                   onClick={() => setSelectedDifficulty(diff)}
-                  className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
                     selectedDifficulty === diff
                       ? "bg-white/10 text-white border border-white/20"
                       : "bg-dark-800 text-slate-400 border border-white/[0.06] hover:border-white/[0.12] hover:text-slate-300"
@@ -358,7 +358,7 @@ export default function InterviewSimulatorPage() {
             disabled={!selectedCompany || loading}
             className={`group relative inline-flex items-center gap-2.5 rounded-xl px-8 py-4 text-base font-semibold shadow-lg transition-all duration-300 ${
               selectedCompany
-                ? `bg-gradient-to-r ${selectedCompany.gradient} text-white shadow-cyan-500/20 hover:shadow-cyan-500/40 hover:brightness-110`
+                ? `bg-gradient-to-r ${selectedCompany.gradient} text-white shadow-cyan-500/20 hover:shadow-cyan-500/40 hover:brightness-110 cursor-pointer`
                 : "bg-dark-700 text-slate-500 cursor-not-allowed"
             }`}
           >

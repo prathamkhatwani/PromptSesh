@@ -310,7 +310,7 @@ export function ChallengeList({
               <Link
                 key={challenge.id}
                 href={`/challenges/${challenge.slug}`}
-                className={`grid grid-cols-1 sm:grid-cols-[44px_1fr_120px_200px_120px_120px] items-center gap-4 px-6 py-4 border-b border-white/[0.04] transition-all hover:bg-white/[0.02] ${
+                className={`group grid grid-cols-1 sm:grid-cols-[44px_1fr_120px_200px_120px_120px] items-center gap-4 px-6 py-4 border-b border-white/[0.04] transition-all duration-200 hover:bg-white/[0.04] hover:border-cyan-500/30 ${
                   idx % 2 === 0 ? "bg-transparent" : "bg-white/[0.01]"
                 }`}
               >

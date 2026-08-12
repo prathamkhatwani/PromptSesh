@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { Terminal, Menu, X, ChevronRight, LogOut, User } from "lucide-react";
 
 export function Navbar() {
+  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { data: session, status } = useSession();
 
@@ -18,7 +20,7 @@ export function Navbar() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-purple-600 shadow-lg shadow-cyan-500/20 transition-shadow group-hover:shadow-cyan-500/40">
+            <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-purple-600 shadow-lg shadow-cyan-500/20 transition-all group-hover:shadow-cyan-500/40 group-hover:scale-105">
               <Terminal className="h-4 w-4 text-white" />
             </div>
             <span className="text-lg font-bold tracking-tight">
@@ -28,21 +30,28 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-1.5">
             {[
               { href: "/challenges", label: "Challenges" },
               { href: "/interview-simulator", label: "Interview" },
               { href: "/leaderboard", label: "Leaderboard" },
               { href: "/profile", label: "Profile" },
-            ].map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="px-4 py-2 text-sm font-medium text-slate-400 rounded-lg transition-all hover:text-white hover:bg-white/[0.04]"
-              >
-                {link.label}
-              </Link>
-            ))}
+            ].map((link) => {
+              const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+                    isActive
+                      ? "text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 shadow-sm shadow-cyan-500/10 font-semibold"
+                      : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </div>
 
           {/* Auth Buttons */}
@@ -69,7 +78,7 @@ export function Navbar() {
                 </Link>
                 <button
                   onClick={() => signOut()}
-                  className="p-2 text-slate-400 hover:text-white hover:bg-white/[0.04] rounded-lg transition-all"
+                  className="p-2 text-slate-400 hover:text-white hover:bg-white/[0.04] rounded-lg transition-all cursor-pointer"
                   title="Sign Out"
                 >
                   <LogOut className="h-4 w-4" />
@@ -96,8 +105,9 @@ export function Navbar() {
 
           {/* Mobile Menu Toggle */}
           <button
-            className="md:hidden p-2 text-slate-400 hover:text-white transition-colors"
+            className="md:hidden p-2 text-slate-400 hover:text-white transition-colors cursor-pointer"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle Menu"
           >
             {mobileMenuOpen ? (
               <X className="h-5 w-5" />
@@ -148,7 +158,7 @@ export function Navbar() {
                   </div>
                   <button
                     onClick={() => signOut()}
-                    className="p-2 text-slate-400 hover:text-white rounded-lg"
+                    className="p-2 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
                   >
                     <LogOut className="h-4.5 w-4.5" />
                   </button>
@@ -157,14 +167,14 @@ export function Navbar() {
                 <>
                   <Link
                     href="/auth/signin"
-                    className="block text-center py-2.5 text-sm font-medium text-slate-300 rounded-lg border border-white/[0.08] hover:bg-white/[0.04]"
+                    className="block text-center py-2.5 text-sm font-medium text-slate-300 rounded-lg border border-white/[0.08] hover:bg-white/[0.04] transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Sign In
                   </Link>
                   <Link
-                    href="/auth/signin"
-                    className="block text-center py-2.5 text-sm font-semibold text-white rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600"
+                    href="/auth/signup"
+                    className="block text-center py-2.5 text-sm font-semibold text-white rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:brightness-110 transition-all shadow-md"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Get Started

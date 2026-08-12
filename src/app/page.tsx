@@ -151,6 +151,43 @@ export default async function HomePage() {
                 </div>
               ))}
             </div>
+            {/* Terminal Showcase Card */}
+            <div className="mt-16 mx-auto max-w-4xl text-left glass-card p-6 sm:p-8 relative overflow-hidden border border-cyan-500/20 shadow-2xl shadow-cyan-500/10 glow-cyan animate-float">
+              {/* Window Header */}
+              <div className="flex items-center justify-between pb-4 mb-4 border-b border-white/[0.08]">
+                <div className="flex items-center gap-2">
+                  <div className="h-3 w-3 rounded-full bg-rose-500/80" />
+                  <div className="h-3 w-3 rounded-full bg-amber-500/80" />
+                  <div className="h-3 w-3 rounded-full bg-emerald-500/80" />
+                  <span className="ml-2 font-mono text-xs text-slate-400">workspace / prompt_engineering.ps</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-[11px] font-medium text-emerald-400">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Passed 100%
+                  </span>
+                  <span className="text-xs font-mono text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-0.5 rounded-md">
+                    Gemini 2.5 Flash
+                  </span>
+                </div>
+              </div>
+
+              {/* Terminal Code Snippet */}
+              <div className="font-mono text-xs sm:text-sm space-y-2 leading-relaxed text-slate-300">
+                <div className="text-purple-400 font-semibold">// Task: Zero-Shot Structured JSON Extractor</div>
+                <div className="text-slate-400">
+                  <span className="text-cyan-400">SYSTEM:</span> You are a production data parser. You MUST output strict RFC-8259 compliant JSON with zero markdown or conversational filler.
+                </div>
+                <div className="bg-dark-900/80 p-3 rounded-lg border border-white/[0.06] text-emerald-300">
+                  <span className="text-slate-500">// Rubric Evaluation Output</span>
+                  <div className="flex flex-wrap gap-2 mt-1.5">
+                    <span className="bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded text-[11px]">JSON Schema Compliance: 100%</span>
+                    <span className="bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded text-[11px]">Zero-Shot Accuracy: 98%</span>
+                    <span className="bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded text-[11px]">Latency: 312ms</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -195,7 +232,7 @@ export default async function HomePage() {
                         {cat.description}
                       </p>
                       <span
-                        className="text-xs font-medium"
+                        className="text-xs font-medium inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform"
                         style={{ color: cat.color }}
                       >
                         {cat.challengeCount} challenges →
@@ -224,7 +261,7 @@ export default async function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {steps.map((step) => (
-              <div key={step.number} className="relative text-center">
+              <div key={step.number} className="glass-card-hover p-6 text-center">
                 {/* Step Number */}
                 <div
                   className="text-6xl font-black mb-6"
@@ -234,7 +271,7 @@ export default async function HomePage() {
                 </div>
                 {/* Icon */}
                 <div
-                  className="inline-flex h-14 w-14 items-center justify-center rounded-2xl mb-5"
+                  className="inline-flex h-14 w-14 items-center justify-center rounded-2xl mb-5 shadow-lg"
                   style={{
                     backgroundColor: `${step.color}15`,
                     color: step.color,
@@ -271,7 +308,7 @@ export default async function HomePage() {
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="glass-card p-8 relative overflow-hidden group"
+                className="glass-card-hover p-8 relative overflow-hidden group"
               >
                 {/* Gradient glow */}
                 <div

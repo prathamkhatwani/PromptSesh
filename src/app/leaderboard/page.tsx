@@ -30,7 +30,7 @@ export default async function LeaderboardPage() {
         {topThree.length >= 3 && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 items-end">
             {/* 2nd Place */}
-            <div className="glass-card p-6 text-center order-2 md:order-1 relative overflow-hidden border-slate-400/20">
+            <div className="glass-card-hover p-6 text-center order-2 md:order-1 relative overflow-hidden border-slate-400/20">
               <div className="absolute top-3 left-3 text-xs font-bold font-mono text-slate-400 bg-slate-500/10 border border-slate-400/20 px-2.5 py-1 rounded-md">
                 RANK #2
               </div>
@@ -63,7 +63,7 @@ export default async function LeaderboardPage() {
             </div>
 
             {/* 1st Place (Gold Highlight) */}
-            <div className="glass-card p-8 text-center order-1 md:order-2 relative overflow-hidden border-amber-500/30 bg-gradient-to-b from-amber-500/10 to-transparent shadow-2xl shadow-amber-500/10 transform md:-translate-y-4">
+            <div className="glass-card-hover p-8 text-center order-1 md:order-2 relative overflow-hidden border-amber-500/30 bg-gradient-to-b from-amber-500/10 to-transparent shadow-2xl shadow-amber-500/10 transform md:-translate-y-4">
               <div className="absolute top-3 left-3 text-xs font-bold font-mono text-amber-400 bg-amber-500/20 border border-amber-500/30 px-3 py-1 rounded-md flex items-center gap-1">
                 <Crown className="h-3.5 w-3.5 text-amber-400" /> RANK #1
               </div>
@@ -96,7 +96,7 @@ export default async function LeaderboardPage() {
             </div>
 
             {/* 3rd Place */}
-            <div className="glass-card p-6 text-center order-3 relative overflow-hidden border-amber-700/20">
+            <div className="glass-card-hover p-6 text-center order-3 relative overflow-hidden border-amber-700/20">
               <div className="absolute top-3 left-3 text-xs font-bold font-mono text-amber-600 bg-amber-700/10 border border-amber-700/20 px-2.5 py-1 rounded-md">
                 RANK #3
               </div>

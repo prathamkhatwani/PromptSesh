@@ -12,17 +12,20 @@ export interface ChallengeFilter {
 
 let lastDbCheckTime = 0;
 let cachedDbStatus: boolean | null = null;
-const DB_CHECK_CACHE_MS = 60000; // Cache status for 60 seconds
+const DB_ONLINE_CACHE_MS = 60000;    // Re-check online status every 60s
+const DB_OFFLINE_CACHE_MS = 300000;  // Cache offline status for 5 minutes (instant renders)
 
 export async function checkDbConnection(): Promise<boolean> {
   const now = Date.now();
-  if (cachedDbStatus !== null && now - lastDbCheckTime < DB_CHECK_CACHE_MS) {
+  const cacheDuration = cachedDbStatus === false ? DB_OFFLINE_CACHE_MS : DB_ONLINE_CACHE_MS;
+
+  if (cachedDbStatus !== null && now - lastDbCheckTime < cacheDuration) {
     return cachedDbStatus;
   }
 
   try {
     const timeoutPromise = new Promise<boolean>((_, reject) =>
-      setTimeout(() => reject(new Error("DB Timeout")), 3000)
+      setTimeout(() => reject(new Error("DB Timeout")), 400)
     );
     const queryPromise = prisma.$queryRaw`SELECT 1`.then(() => true);
 
@@ -367,9 +370,9 @@ export async function getUserProfileData(
         challengeTitle: s.challenge.title,
         challengeSlug: s.challenge.slug,
         difficulty: s.challenge.difficulty.charAt(0) + s.challenge.difficulty.slice(1).toLowerCase(),
-        score: Math.round(s.totalScore),
+        score: Math.round(s.totalScore || 0),
         passed: s.passed,
-        modelName: s.modelTestResults?.[0]?.modelName || "gpt-4o-mini",
+        modelName: s.modelTestResults?.[0]?.modelName || "gemini-2.5-flash",
         createdAt: new Date(s.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
       })),
     };
@@ -389,25 +392,28 @@ export async function getLeaderboardData() {
   try {
     const users = await prisma.user.findMany({
       include: {
-        submissions: {
-          where: { passed: true },
-        },
+        submissions: true,
         streaks: true,
       },
       take: 20,
     });
 
-    const leaderboard = users.map((user) => {
-      const solvedCount = new Set(user.submissions.map((s) => s.challengeId)).size;
+    const leaderboard = users.map((user: any) => {
+      const submissions = user.submissions || [];
+      const passedSubs = submissions.filter((s: any) => s.passed);
+      const solvedCount = new Set(passedSubs.map((s: any) => s.challengeId)).size;
       const streakDays = user.streaks?.[0]?.currentStreak || 0;
       const totalPoints = solvedCount * 100 + streakDays * 10;
+      const userAccuracy = submissions.length > 0
+        ? Math.round((passedSubs.length / submissions.length) * 1000) / 10
+        : 0;
 
       return {
         id: user.id,
         name: user.name || "Engineer",
         avatar: user.image || undefined,
         solvedCount,
-        accuracyRate: user.submissions.length > 0 ? Math.round((user.submissions.length / (user.submissions.length + 2)) * 1000) / 10 : 0,
+        accuracyRate: userAccuracy,
         streakDays,
         totalPoints,
         badge: solvedCount > 20 ? "Grandmaster" : solvedCount > 10 ? "Practitioner" : "Novice",

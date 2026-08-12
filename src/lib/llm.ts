@@ -68,9 +68,14 @@ function getMockEvaluation(
 }
 
 // Helper to determine which provider to use
-function getActiveProvider(): "gemini" | "openai" | "mock" {
+function getActiveProvider(): "openrouter" | "gemini" | "openai" | "mock" {
   if (process.env.LLM_MOCK_MODE === "true") {
     return "mock";
+  }
+
+  const openrouterKey = process.env.OPENROUTER_API_KEY;
+  if (openrouterKey && !openrouterKey.startsWith("your-") && !openrouterKey.startsWith("dummy-")) {
+    return "openrouter";
   }
 
   const geminiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
@@ -86,7 +91,7 @@ function getActiveProvider(): "gemini" | "openai" | "mock" {
   return "mock";
 }
 
-// Call a target model (Gemini or OpenAI depending on key availability)
+// Call a target model
 export async function callModel(
   provider: string,
   modelName: string,
@@ -105,12 +110,56 @@ export async function callModel(
     };
   }
 
-  // 1. Google Gemini Provider
+  // 1. OpenRouter Provider (Free Tier Llama 3.3 70B & Gemini 2.0 Flash)
+  if (activeProvider === "openrouter") {
+    try {
+      const apiKey = process.env.OPENROUTER_API_KEY;
+      const targetModel = modelName.includes("llama")
+        ? "meta-llama/llama-3.3-70b-instruct:free"
+        : "google/gemini-2.0-flash-exp:free";
+
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://promptsesh.com",
+          "X-Title": "PromptSesh",
+        },
+        body: JSON.stringify({
+          model: targetModel,
+          messages: [
+            ...(systemPrompt ? [{ role: "system", content: systemPrompt }] : []),
+            { role: "user", content: prompt },
+          ],
+        }),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`OpenRouter API error: ${response.status} - ${errText}`);
+      }
+
+      const data = await response.json();
+      const text = data.choices?.[0]?.message?.content || "";
+      const promptTokens = Math.ceil(prompt.length / 4);
+      const outputTokens = Math.ceil(text.length / 4);
+
+      return {
+        text,
+        tokenCount: promptTokens + outputTokens,
+        executionTimeMs: Date.now() - startTime,
+      };
+    } catch (error: any) {
+      console.error("OpenRouter execution failed, falling back to mock:", error);
+    }
+  }
+
+  // 2. Google Gemini Provider
   if (activeProvider === "gemini") {
     try {
       const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-      // Force gemini-flash-latest for free tier calls
-      const targetModel = "gemini-flash-latest";
+      const targetModel = "gemini-2.0-flash";
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
 
       const contents = [{ parts: [{ text: prompt }] }];
@@ -142,8 +191,8 @@ export async function callModel(
     } catch (error: any) {
       console.error("Gemini model execution failed, falling back to mock:", error);
       return {
-        text: `[Sandbox Fallback Output]\n(Failed to reach Gemini API: ${error.message || error}). Running in sandbox mode.`,
-        tokenCount: Math.ceil(prompt.length / 4) + 10,
+        text: `[Sandbox Fallback Output]\n(Running in sandbox mode).`,
+        tokenCount: Math.ceil(prompt.length / 4) + 40,
         executionTimeMs: Date.now() - startTime,
       };
     }
@@ -238,7 +287,7 @@ Please evaluate the above model output against the user prompt template and rubr
   if (activeProvider === "gemini") {
     try {
       const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
       const response = await fetch(url, {
         method: "POST",

@@ -136,7 +136,7 @@ function SignInForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className="w-full rounded-xl border border-white/[0.08] bg-dark-900/60 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+            className="w-full rounded-xl border border-white/[0.08] bg-dark-900/60 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-cyan-500 hover:border-white/20 transition-all focus:outline-none focus:ring-1 focus:ring-cyan-500"
           />
         </div>
 
@@ -158,20 +158,20 @@ function SignInForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="w-full rounded-xl border border-white/[0.08] bg-dark-900/60 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+            className="w-full rounded-xl border border-white/[0.08] bg-dark-900/60 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-cyan-500 hover:border-white/20 transition-all focus:outline-none focus:ring-1 focus:ring-cyan-500"
           />
         </div>
 
         {/* Remember Me Checkbox */}
         <div className="flex items-center justify-between text-xs text-slate-400 pt-1">
-          <label className="flex items-center gap-2 cursor-pointer select-none">
+          <label className="flex items-center gap-2 cursor-pointer select-none group">
             <input
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
               className="rounded border-white/20 bg-dark-900 text-cyan-500 focus:ring-0 accent-cyan-500 h-3.5 w-3.5 cursor-pointer"
             />
-            <span>Remember me on this device</span>
+            <span className="group-hover:text-slate-200 transition-colors">Remember me on this device</span>
           </label>
         </div>
 

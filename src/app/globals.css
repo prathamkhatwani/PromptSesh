@@ -40,6 +40,10 @@
     background-color: rgba(34, 211, 238, 0.3);
     color: #ffffff;
   }
+
+  button, select, [role="button"] {
+    cursor: pointer;
+  }
 }
 
 @layer components {
@@ -113,6 +117,45 @@
     box-shadow: 0 0 20px rgba(167, 139, 250, 0.15), 0 0 60px rgba(167, 139, 250, 0.05);
   }
 
+  .glow-amber {
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.15), 0 0 60px rgba(251, 191, 36, 0.05);
+  }
+
+  .glow-cyan-lg {
+    box-shadow: 0 0 35px rgba(34, 211, 238, 0.25), 0 0 80px rgba(34, 211, 238, 0.1);
+  }
+
+  .glow-purple-lg {
+    box-shadow: 0 0 35px rgba(167, 139, 250, 0.25), 0 0 80px rgba(167, 139, 250, 0.1);
+  }
+
+  .shimmer-btn {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer-btn::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      60deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.15) 50%,
+      transparent 70%
+    );
+    transform: rotate(30deg);
+    animation: shimmer 4s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%) rotate(30deg); }
+    100% { transform: translateX(100%) rotate(30deg); }
+  }
+
   .prompt-editor {
     background: rgba(10, 10, 18, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -123,6 +166,10 @@
     color: #e2e8f0;
     resize: vertical;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .prompt-editor:hover {
+    border-color: rgba(255, 255, 255, 0.18);
   }
 
   .prompt-editor:focus {

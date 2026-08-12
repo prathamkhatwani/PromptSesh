@@ -25,9 +25,10 @@ import type { MockChallenge } from "@/lib/mock-data";
 import { generateSolutionFramework } from "@/lib/scraper";
 
 const models = [
-  { id: "claude", name: "Claude 3.5 Sonnet", provider: "Anthropic", color: "#d4a574" },
+  { id: "llama-3.3-70b", name: "Llama 3.3 70B (Free)", provider: "Meta / OpenRouter", color: "#0081fb" },
+  { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash (Free)", provider: "Google / OpenRouter", color: "#4285f4" },
   { id: "gpt4", name: "GPT-4o", provider: "OpenAI", color: "#74aa9c" },
-  { id: "gemini", name: "Gemini 1.5 Pro", provider: "Google", color: "#4285f4" },
+  { id: "claude", name: "Claude 3.5 Sonnet", provider: "Anthropic", color: "#d4a574" },
 ];
 
 export function ChallengeWorkspace({
@@ -38,16 +39,13 @@ export function ChallengeWorkspace({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [promptText, setPromptText] = useState(() => {
-    if (challenge.starterPrompt) {
-      return challenge.starterPrompt;
-    }
     let variablesText = "";
     if (challenge.testInputs && challenge.testInputs[0]) {
       variablesText = Object.keys(challenge.testInputs[0])
         .map((key) => `${key.charAt(0).toUpperCase() + key.slice(1)}: {{${key}}}`)
         .join("\n");
     }
-    return `\n\n${variablesText}`;
+    return variablesText ? `\n\n${variablesText}` : "";
   });
 
   useEffect(() => {
@@ -57,7 +55,7 @@ export function ChallengeWorkspace({
     }
   }, [challenge.id]);
 
-  const [selectedModel, setSelectedModel] = useState("gemini");
+  const [selectedModel, setSelectedModel] = useState("llama-3.3-70b");
   const [crossModelEnabled, setCrossModelEnabled] = useState(false);
   const [hintsVisible, setHintsVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<"description" | "rubric" | "solution">(
@@ -164,9 +162,9 @@ export function ChallengeWorkspace({
       </div>
 
       {/* Split Panes */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
         {/* ── LEFT PANEL: Problem Description ──────────── */}
-        <div className="w-1/2 overflow-y-auto border-r border-white/[0.06] bg-dark-950">
+        <div className="w-full md:w-1/2 overflow-y-auto border-r border-white/[0.06] bg-dark-950">
           {/* Tabs */}
           <div className="sticky top-0 z-10 flex border-b border-white/[0.06] bg-dark-950/95 backdrop-blur-sm">
             {[
@@ -177,7 +175,7 @@ export function ChallengeWorkspace({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-5 py-3 text-sm font-medium transition-colors relative ${
+                className={`px-5 py-3 text-sm font-medium transition-colors relative cursor-pointer ${
                   activeTab === tab.id
                     ? "text-white font-semibold"
                     : "text-slate-500 hover:text-slate-300"
@@ -388,7 +386,7 @@ export function ChallengeWorkspace({
         </div>
 
         {/* ── RIGHT PANEL: Prompt Editor & Console ────── */}
-        <div className="w-1/2 flex flex-col overflow-hidden bg-dark-900">
+        <div className="w-full md:w-1/2 flex flex-col overflow-hidden bg-dark-900">
           {/* Top selection bar */}
           <div className="border-b border-white/[0.06] px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-1">
@@ -396,7 +394,7 @@ export function ChallengeWorkspace({
                 <button
                   key={model.id}
                   onClick={() => setSelectedModel(model.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                     selectedModel === model.id
                       ? "text-white bg-white/[0.08] border border-white/[0.12]"
                       : "text-slate-500 hover:text-slate-300 border border-transparent"
@@ -648,7 +646,7 @@ export function ChallengeWorkspace({
                   setShowConsole(true);
                   setConsoleTab("testcase");
                 }}
-                className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white px-2.5 py-1.5 rounded hover:bg-white/[0.04] transition-all"
+                className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white px-2.5 py-1.5 rounded hover:bg-white/[0.04] transition-all cursor-pointer"
               >
                 <ChevronUp className={`h-4 w-4 transition-transform ${showConsole ? "rotate-180" : ""}`} />
                 Console

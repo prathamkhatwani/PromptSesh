@@ -53,7 +53,7 @@ export async function POST(
       // Model execution mock call
       const modelExecution = await callModel(
         "Google",
-        "gemini-1.5-flash",
+        "gemini-2.5-flash",
         compiledPrompt,
         mockChallenge.constraints ? mockChallenge.constraints.join("\n") : undefined
       );
@@ -101,7 +101,7 @@ export async function POST(
             id: "mock-res-id",
             submissionId: "mock-sub-id",
             modelProvider: "Google",
-            modelName: "gemini-1.5-flash",
+            modelName: "gemini-2.5-flash",
             rawOutput: modelExecution.text,
             latencyMs: modelExecution.executionTimeMs,
             score: totalScore,
@@ -208,7 +208,7 @@ export async function POST(
     const isGeminiAvailable = geminiKey && !geminiKey.startsWith("your-") && !geminiKey.startsWith("dummy-");
 
     const targetModel = isGeminiAvailable 
-      ? { provider: "Google", name: "gemini-flash-latest" }
+      ? { provider: "Google", name: "gemini-2.5-flash" }
       : { provider: "OpenAI", name: "gpt-4o-mini" };
 
     // Call execution

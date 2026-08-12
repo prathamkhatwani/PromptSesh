@@ -29,6 +29,8 @@ model User {
   submissions   Submission[]
   streaks       Streak[]
   userBadges    UserBadge[]
+
+  @@index([resetToken])
 }
 
 model Account {
