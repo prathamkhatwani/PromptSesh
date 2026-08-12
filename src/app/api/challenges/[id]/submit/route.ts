@@ -26,10 +26,14 @@ export async function POST(
     const body = await req.json();
     const { promptText, modelId = "gemini", crossModel = false } = body;
 
-    const cleanedPrompt = promptText.replace(/\(\s*write your prompt here\s*\.?\.?\s*\)/gi, "").trim();
-    if (!cleanedPrompt || cleanedPrompt.length < 5) {
+    const customInstructions = promptText
+      .replace(/\{\{.*?\}\}/g, "")
+      .replace(/^[A-Za-z0-9_\s]+:\s*/gm, "")
+      .trim();
+
+    if (!customInstructions || customInstructions.length < 5) {
       return NextResponse.json(
-        { error: "Please write your custom prompt instructions before submitting. Placeholder text cannot be evaluated." },
+        { error: "Please write your prompt instructions before submitting! An empty prompt template cannot be evaluated." },
         { status: 400 }
       );
     }

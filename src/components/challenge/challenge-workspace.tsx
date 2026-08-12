@@ -75,9 +75,13 @@ export function ChallengeWorkspace({
   const tokenEstimate = Math.ceil(promptText.split(/\s+/).filter(Boolean).length * 1.3);
 
   const runGradingPipeline = async () => {
-    const cleaned = promptText.replace(/\(\s*write your prompt here\s*\.?\.?\s*\)/gi, "").trim();
-    if (!cleaned || cleaned.length < 5) {
-      setErrorMsg("Please write your custom prompt instructions before running tests! Placeholder text cannot be evaluated.");
+    const customInstructions = promptText
+      .replace(/\{\{.*?\}\}/g, "")
+      .replace(/^[A-Za-z0-9_\s]+:\s*/gm, "")
+      .trim();
+
+    if (!customInstructions || customInstructions.length < 5) {
+      setErrorMsg("Please write your prompt instructions before running tests or submitting! An empty prompt template cannot be evaluated.");
       setShowConsole(true);
       setConsoleTab("grading");
       return;
