@@ -192,9 +192,9 @@ export function ChallengeWorkspace({
   };
 
   return (
-    <div className="flex flex-col" style={{ height: "calc(100vh - 64px)" }}>
+    <div className="flex flex-col min-h-[calc(100vh-64px)] md:h-[calc(100vh-64px)]">
       {/* Top Bar */}
-      <div className="flex items-center justify-between border-b border-white/[0.06] bg-dark-900/80 backdrop-blur-sm px-4 py-2">
+      <div className="flex items-center justify-between border-b border-white/[0.06] bg-dark-900/80 backdrop-blur-sm px-4 py-2 shrink-0">
         <div className="flex items-center gap-3">
           <Link
             href="/challenges"
@@ -228,9 +228,9 @@ export function ChallengeWorkspace({
       </div>
 
       {/* Split Panes */}
-      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+      <div className="flex flex-col md:flex-row flex-1 overflow-y-auto md:overflow-hidden">
         {/* ── LEFT PANEL: Problem Description ──────────── */}
-        <div className="w-full md:w-1/2 overflow-y-auto border-r border-white/[0.06] bg-dark-950">
+        <div className="w-full md:w-1/2 overflow-y-auto border-b md:border-b-0 md:border-r border-white/[0.06] bg-dark-950 shrink-0 md:shrink flex-1 max-h-[500px] md:max-h-none">
           {/* Tabs */}
           <div className="sticky top-0 z-10 flex border-b border-white/[0.06] bg-dark-950/95 backdrop-blur-sm">
             {[
@@ -461,15 +461,15 @@ export function ChallengeWorkspace({
         </div>
 
         {/* ── RIGHT PANEL: Prompt Editor & Console ────── */}
-        <div className="w-full md:w-1/2 flex flex-col overflow-hidden bg-dark-900">
+        <div className="w-full md:w-1/2 flex flex-col bg-dark-900 shrink-0 md:shrink overflow-visible md:overflow-hidden">
           {/* Top selection bar */}
-          <div className="border-b border-white/[0.06] px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-1">
+          <div className="border-b border-white/[0.06] px-4 py-3 flex items-center justify-between gap-3 overflow-x-auto">
+            <div className="flex items-center gap-1 shrink-0">
               {models.map((model) => (
                 <button
                   key={model.id}
                   onClick={() => setSelectedModel(model.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer shrink-0 ${
                     selectedModel === model.id
                       ? "text-white bg-white/[0.08] border border-white/[0.12]"
                       : "text-slate-500 hover:text-slate-300 border border-transparent"
@@ -485,7 +485,7 @@ export function ChallengeWorkspace({
             </div>
 
             {/* Cross-model toggle */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={() => setCrossModelEnabled(!crossModelEnabled)}
                 className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors ${
@@ -498,7 +498,7 @@ export function ChallengeWorkspace({
                   }`}
                 />
               </button>
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-slate-400 whitespace-nowrap">
                 Test across all models
               </span>
             </div>
