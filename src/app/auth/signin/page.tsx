@@ -57,20 +57,9 @@ function SignInForm() {
     setError(null);
     setNotice(null);
     try {
-      const result = await signIn("github", { callbackUrl, redirect: false });
-      const targetUrl = result?.url || "";
-      const isDummyKey = targetUrl.includes("dummy-github-id") || targetUrl.includes("client_id=dummy");
-
-      if (isDummyKey || result?.error) {
-        setNotice("GitHub OAuth keys unconfigured in .env. Automatically logging in via Demo Account...");
-        await signIn("demo", { callbackUrl });
-      } else if (targetUrl) {
-        window.location.href = targetUrl;
-      } else {
-        await signIn("demo", { callbackUrl });
-      }
+      await signIn("github", { callbackUrl });
     } catch (error) {
-      setNotice("Logging in via Demo Account...");
+      setNotice("Could not connect to GitHub. Logging in via Demo Account...");
       await signIn("demo", { callbackUrl });
     } finally {
       setLoading(null);
