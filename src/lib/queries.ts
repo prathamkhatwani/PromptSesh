@@ -51,7 +51,7 @@ export async function checkDbConnection(): Promise<boolean> {
 export async function getCategories() {
   const isConnected = await checkDbConnection();
   if (!isConnected) {
-    return mock.categories;
+    return mock.getCategoriesWithCounts();
   }
 
   try {
@@ -64,18 +64,24 @@ export async function getCategories() {
       },
     });
 
-    return dbCategories.map((cat) => ({
-      id: cat.id,
-      name: cat.name,
-      slug: cat.slug,
-      description: cat.description,
-      icon: cat.icon || "Zap",
-      color: cat.color || "#22d3ee",
-      challengeCount: cat._count.challenges,
-    }));
+    const mockCategoriesWithCounts = mock.getCategoriesWithCounts();
+
+    return dbCategories.map((cat) => {
+      const mockMatch = mockCategoriesWithCounts.find((m) => m.slug === cat.slug);
+      const calculatedCount = cat._count.challenges || mockMatch?.challengeCount || 0;
+      return {
+        id: cat.id,
+        name: cat.name,
+        slug: cat.slug,
+        description: cat.description,
+        icon: cat.icon || "Zap",
+        color: cat.color || "#22d3ee",
+        challengeCount: calculatedCount,
+      };
+    });
   } catch (error) {
     console.error("Error fetching categories from DB, falling back to mock data", error);
-    return mock.categories;
+    return mock.getCategoriesWithCounts();
   }
 }
 

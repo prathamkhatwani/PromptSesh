@@ -2189,6 +2189,18 @@ for (const ch of challenges) {
 
 // ── Helper Functions ───────────────────────────────────────────────────────
 
+export function getCategoriesWithCounts(): MockCategory[] {
+  return categories.map((cat) => {
+    const count = challenges.filter(
+      (c) => c.categorySlug === cat.slug || c.category.toLowerCase() === cat.name.toLowerCase()
+    ).length;
+    return {
+      ...cat,
+      challengeCount: count,
+    };
+  });
+}
+
 export function getChallengeBySlug(slug: string): MockChallenge | undefined {
   return challenges.find((c) => c.slug === slug);
 }
@@ -2198,5 +2210,5 @@ export function getChallengesByCategory(categorySlug: string): MockChallenge[] {
 }
 
 export function getCategoryBySlug(slug: string): MockCategory | undefined {
-  return categories.find((c) => c.slug === slug);
+  return getCategoriesWithCounts().find((c) => c.slug === slug);
 }
