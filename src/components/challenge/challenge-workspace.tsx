@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -110,18 +110,42 @@ export function ChallengeWorkspace({
   const [submissionCount, setSubmissionCount] = useState(challenge.totalSubmissions || 0);
   const [currentAcceptance, setCurrentAcceptance] = useState(challenge.acceptanceRate || 0);
 
+  const availableVariables = useMemo(() => {
+    const keys = new Set<string>();
+    if (challenge.testInputs && Array.isArray(challenge.testInputs)) {
+      for (const item of challenge.testInputs) {
+        if (item && typeof item === "object") {
+          Object.keys(item).forEach((k) => keys.add(k));
+        }
+      }
+    }
+    return Array.from(keys);
+  }, [challenge.testInputs]);
+
+  const insertVariable = (varName: string) => {
+    const tag = `{{${varName}}}`;
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      setPromptText((prev) => (prev ? `${prev} ${tag}` : tag));
+      return;
+    }
+    const start = textarea.selectionStart ?? promptText.length;
+    const end = textarea.selectionEnd ?? promptText.length;
+    const nextText = promptText.substring(0, start) + tag + promptText.substring(end);
+    setPromptText(nextText);
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + tag.length, start + tag.length);
+    }, 10);
+  };
+
   const tokenEstimate = Math.ceil(promptText.split(/\s+/).filter(Boolean).length * 1.3);
 
   const runGradingPipeline = async () => {
-    const customInstructions = promptText
-      .replace(/\{\{.*?\}\}/g, "")
-      .replace(/^[A-Za-z0-9_\s]+:\s*/gm, "")
-      .trim();
-
-    if (!customInstructions || customInstructions.length < 5) {
-      setErrorMsg("Please write your prompt instructions before running tests or submitting! An empty prompt template cannot be evaluated.");
+    if (!promptText.trim()) {
+      setErrorMsg("Please write a prompt template before running tests or submitting!");
       setShowConsole(true);
-      setConsoleTab("grading");
+      setConsoleTab("testcase");
       return;
     }
 
@@ -145,7 +169,7 @@ export function ChallengeWorkspace({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to submit grading.");
+        throw new Error(data.error || "Failed to submit prompt evaluation.");
       }
 
       setGradingResult(data.submission);
@@ -161,7 +185,7 @@ export function ChallengeWorkspace({
       setCurrentAcceptance(newRate);
     } catch (err: any) {
       setErrorMsg(err.message || "An error occurred during submission evaluation.");
-      setConsoleTab("testcase");
+      setConsoleTab("grading");
     } finally {
       setLoading(false);
     }
@@ -521,10 +545,34 @@ export function ChallengeWorkspace({
               </div>
             </div>
 
-            {/* Always-visible instruction watermark banner */}
-            <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg px-3 py-2 mb-2 text-xs text-cyan-300 flex items-center gap-2 shrink-0">
-              <Sparkles className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
-              <span><strong>Write your prompt instructions in the box below</strong> (e.g. <em>"Analyze the problem and provide a step-by-step solution"</em>)</span>
+            {/* Variable insertion helper chips */}
+            {availableVariables.length > 0 && (
+              <div className="flex items-center gap-1.5 flex-wrap mb-2.5 p-2 bg-dark-950/60 border border-white/[0.04] rounded-lg shrink-0">
+                <span className="text-[11px] font-semibold text-slate-400">Insert Variable:</span>
+                {availableVariables.map((v: string) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => insertVariable(v)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-mono transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
+                    title={`Click to insert {{${v}}} at cursor`}
+                  >
+                    <span className="text-cyan-400 font-bold">+</span>
+                    <span>&#123;&#123;{v}&#125;&#125;</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Instruction watermark banner */}
+            <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg px-3 py-2 mb-2 text-xs text-cyan-300 flex items-center justify-between gap-2 shrink-0">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+                <span><strong>Write your prompt instructions below</strong> (e.g. <em>"Analyze the problem and provide a step-by-step solution"</em>)</span>
+              </div>
+              <span className="hidden sm:inline-flex items-center text-[10px] text-cyan-400/80 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20 font-mono">
+                ⌘↵ to run
+              </span>
             </div>
 
             <textarea
@@ -532,7 +580,15 @@ export function ChallengeWorkspace({
               autoFocus
               value={promptText}
               onChange={(e) => setPromptText(e.target.value)}
-              placeholder="Write your prompt instructions here..."
+              onKeyDown={(e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+                  e.preventDefault();
+                  if (!loading) {
+                    runGradingPipeline();
+                  }
+                }
+              }}
+              placeholder="Write your prompt instructions here... (Press ⌘+Enter or Ctrl+Enter to test)"
               className="prompt-editor flex-1 w-full p-4 resize-none min-h-[120px]"
               spellCheck={false}
             />
@@ -540,7 +596,7 @@ export function ChallengeWorkspace({
 
           {/* ── Console / Results bottom drawer ────────── */}
           {showConsole && (
-            <div className="h-[42%] max-h-[50%] min-h-[180px] shrink-0 border-t border-white/[0.08] bg-dark-950 flex flex-col overflow-hidden">
+            <div className="h-[35%] max-h-[42%] min-h-[140px] shrink-0 border-t border-white/[0.08] bg-dark-950 flex flex-col overflow-hidden">
               {/* Drawer Tabs */}
               <div className="flex items-center justify-between px-4 border-b border-white/[0.06] bg-dark-900/60 shrink-0">
                 <div className="flex">
@@ -573,7 +629,7 @@ export function ChallengeWorkspace({
               </div>
 
               {/* Drawer Body */}
-              <div className="flex-1 overflow-y-auto p-5">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-5">
                 {errorMsg && (
                   <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-400 flex gap-2">
                     <XCircle className="h-5 w-5 shrink-0" />
@@ -583,7 +639,7 @@ export function ChallengeWorkspace({
 
                 {/* Loading state */}
                 {loading && (
-                  <div className="flex flex-col items-center justify-center py-16 gap-3">
+                  <div className="flex flex-col items-center justify-center py-12 gap-3">
                     <Loader2 className="h-8 w-8 text-cyan-400 animate-spin" />
                     <p className="text-sm text-slate-400 font-medium">Evaluating prompt outputs against rubric criteria...</p>
                   </div>
@@ -592,26 +648,46 @@ export function ChallengeWorkspace({
                 {/* Tab 1: Test cases view */}
                 {!loading && consoleTab === "testcase" && (
                   <div className="space-y-3">
-                    {challenge.testInputs && challenge.testInputs.map((inputGroup, idx) => (
-                      <div
-                        key={idx}
-                        className="rounded-lg bg-dark-900 border border-white/[0.04] p-4 space-y-2 text-xs"
-                      >
-                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                          Case #{idx + 1}
-                        </div>
-                        {Object.entries(inputGroup).map(([key, value]) => (
-                          <div key={key} className="space-y-1">
-                            <div className="font-mono text-cyan-400">
-                              {`{{${key}}}`}
-                            </div>
-                            <div className="text-slate-400 pl-2.5 border-l border-white/[0.08] whitespace-pre-wrap leading-relaxed">
-                              {value}
-                            </div>
+                    {challenge.testInputs && challenge.testInputs.map((inputGroup, idx) => {
+                      let compiledPreview = promptText;
+                      Object.entries(inputGroup).forEach(([k, v]) => {
+                        compiledPreview = compiledPreview.replace(new RegExp(`\\{\\{\\s*${k}\\s*\\}\\}`, "g"), String(v));
+                      });
+
+                      return (
+                        <div
+                          key={idx}
+                          className="rounded-lg bg-dark-900 border border-white/[0.06] p-4 space-y-3 text-xs"
+                        >
+                          <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                            <span>Case #{idx + 1} Variables</span>
                           </div>
-                        ))}
-                      </div>
-                    ))}
+                          <div className="space-y-2">
+                            {Object.entries(inputGroup).map(([key, value]) => (
+                              <div key={key} className="space-y-0.5">
+                                <div className="font-mono text-cyan-400 text-[11px]">
+                                  {`{{${key}}}`}
+                                </div>
+                                <div className="text-slate-300 pl-2.5 border-l-2 border-cyan-500/30 whitespace-pre-wrap leading-relaxed text-xs">
+                                  {String(value)}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {promptText.trim() && (
+                            <div className="pt-2 border-t border-white/[0.04]">
+                              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                Compiled Prompt Preview:
+                              </div>
+                              <pre className="font-mono text-[11px] text-slate-300 bg-dark-950 p-2.5 rounded border border-white/[0.04] whitespace-pre-wrap overflow-x-auto leading-relaxed">
+                                {compiledPreview}
+                              </pre>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
 
@@ -619,18 +695,33 @@ export function ChallengeWorkspace({
                 {!loading && consoleTab === "output" && gradingResult && (
                   <div className="space-y-4">
                     {gradingResult.modelTestResults?.map((res: any, idx: number) => (
-                      <div key={idx} className="space-y-2">
+                      <div key={idx} className="space-y-3 rounded-lg bg-dark-900 border border-white/[0.06] p-4">
                         <div className="flex items-center justify-between text-xs">
                           <span className="font-semibold text-white">
-                            Raw Generated Response ({res.modelProvider} {res.modelName})
+                            Generated Output ({res.modelProvider} · {res.modelName})
                           </span>
-                          <span className="text-slate-500 font-mono">
+                          <span className="text-slate-500 font-mono text-[11px]">
                             Latency: {res.latencyMs}ms
                           </span>
                         </div>
-                        <pre className="p-4 rounded-lg border border-white/[0.06] bg-dark-900 text-xs text-slate-300 font-mono whitespace-pre-wrap overflow-x-auto leading-relaxed">
-                          {res.rawOutput}
-                        </pre>
+                        {res.compiledPrompt && (
+                          <div>
+                            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                              Evaluated Prompt Sent to Model:
+                            </div>
+                            <pre className="p-3 rounded border border-white/[0.04] bg-dark-950 text-[11px] text-cyan-300/90 font-mono whitespace-pre-wrap overflow-x-auto leading-relaxed">
+                              {res.compiledPrompt}
+                            </pre>
+                          </div>
+                        )}
+                        <div>
+                          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                            Model Response:
+                          </div>
+                          <pre className="p-3 rounded border border-white/[0.04] bg-dark-950 text-xs text-slate-200 font-mono whitespace-pre-wrap overflow-x-auto leading-relaxed">
+                            {res.rawOutput}
+                          </pre>
+                        </div>
                       </div>
                     ))}
                   </div>

@@ -125,14 +125,34 @@ export function ChallengeList({
     <div className="min-h-screen">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
-        <div className="mb-10">
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
-            Challenges
-          </h1>
-          <p className="text-slate-400 text-lg">
-            {initialChallenges.length} challenges across{" "}
-            {initialCategories.length} skill categories
-          </p>
+        <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold mb-3">
+              <span>⚡</span>
+              <span>100 Interactive Prompt Engineering Labs</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-2">
+              Explore Challenges
+            </h1>
+            <p className="text-slate-400 text-sm sm:text-base max-w-2xl">
+              Solve real-world prompt engineering scenarios, test across multiple LLMs, and receive instant criteria-level rubric scores from automated AI judges.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="bg-dark-900 border border-white/[0.06] rounded-xl px-4 py-2.5 text-center shrink-0">
+              <div className="text-xl font-extrabold text-cyan-400 font-mono">{initialChallenges.length}</div>
+              <div className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Total Labs</div>
+            </div>
+            <div className="bg-dark-900 border border-white/[0.06] rounded-xl px-4 py-2.5 text-center shrink-0">
+              <div className="text-xl font-extrabold text-purple-400 font-mono">{initialCategories.length}</div>
+              <div className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Categories</div>
+            </div>
+            <div className="bg-dark-900 border border-white/[0.06] rounded-xl px-4 py-2.5 text-center shrink-0">
+              <div className="text-xl font-extrabold text-emerald-400 font-mono">4</div>
+              <div className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Tiers</div>
+            </div>
+          </div>
         </div>
 
         {/* Filters & Categories Toolbar */}

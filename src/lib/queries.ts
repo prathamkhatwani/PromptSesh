@@ -12,10 +12,20 @@ export interface ChallengeFilter {
 
 let lastDbCheckTime = 0;
 let cachedDbStatus: boolean | null = null;
-const DB_ONLINE_CACHE_MS = 60000;    // Re-check online status every 60s
-const DB_OFFLINE_CACHE_MS = 300000;  // Cache offline status for 5 minutes (instant renders)
+const DB_ONLINE_CACHE_MS = 120000;   // Re-check online status every 2 minutes
+const DB_OFFLINE_CACHE_MS = 300000;  // Cache offline status for 5 minutes
 
 export async function checkDbConnection(): Promise<boolean> {
+  // 1. Fast path: if explicitly running in mock mode or database URL unconfigured
+  if (process.env.LLM_MOCK_MODE === "true") {
+    return false;
+  }
+
+  const dbUrl = process.env.DATABASE_URL;
+  if (!dbUrl || dbUrl.includes("user:password@localhost") || dbUrl.startsWith("dummy-")) {
+    return false;
+  }
+
   const now = Date.now();
   const cacheDuration = cachedDbStatus === false ? DB_OFFLINE_CACHE_MS : DB_ONLINE_CACHE_MS;
 
@@ -25,7 +35,7 @@ export async function checkDbConnection(): Promise<boolean> {
 
   try {
     const timeoutPromise = new Promise<boolean>((_, reject) =>
-      setTimeout(() => reject(new Error("DB Timeout")), 3000)
+      setTimeout(() => reject(new Error("DB Timeout")), 1500)
     );
     const queryPromise = prisma.$queryRaw`SELECT 1`.then(() => true);
 
