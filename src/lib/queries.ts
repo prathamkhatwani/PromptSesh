@@ -191,29 +191,38 @@ export async function getChallenges(filters: ChallengeFilter = {}) {
       },
     });
 
-    return dbChallenges.map((ch) => ({
-      id: ch.id,
-      title: ch.title,
-      slug: ch.slug,
-      description: ch.description,
-      fullDescription: ch.description,
-      difficulty: ch.difficulty.charAt(0) + ch.difficulty.slice(1).toLowerCase() as any,
-      category: ch.category.name,
-      categorySlug: ch.category.slug,
-      acceptanceRate: ch.acceptanceRate,
-      totalSubmissions: ch.totalSubmissions,
-      starterPrompt: ch.starterPrompt || undefined,
-      testInputs: (ch.testInputs as any) || [],
-      constraints: ch.constraints ? ch.constraints.split("\n") : [],
-      hints: ch.hints || [],
-      tags: [],
-      isPremium: ch.isPremium,
-      rubricCriteria: ch.rubric?.criteria.map((crit) => ({
-        name: crit.name,
-        weight: crit.weight,
-        description: crit.description,
-      })) || [],
-    }));
+    return dbChallenges.map((ch) => {
+      const mockData = mock.getChallengeBySlug(ch.slug);
+      const fullDesc = (mockData?.fullDescription && mockData.fullDescription.length > (ch.description?.length || 0))
+        ? mockData.fullDescription
+        : (ch.description || mockData?.fullDescription || "");
+
+      return {
+        id: ch.id,
+        title: ch.title,
+        slug: ch.slug,
+        description: mockData?.description || ch.description,
+        fullDescription: fullDesc,
+        difficulty: ch.difficulty.charAt(0) + ch.difficulty.slice(1).toLowerCase() as any,
+        category: ch.category.name,
+        categorySlug: ch.category.slug,
+        acceptanceRate: ch.acceptanceRate,
+        totalSubmissions: ch.totalSubmissions,
+        starterPrompt: ch.starterPrompt || mockData?.starterPrompt || undefined,
+        testInputs: (ch.testInputs as any)?.length ? (ch.testInputs as any) : (mockData?.testInputs || []),
+        constraints: ch.constraints ? ch.constraints.split("\n") : (mockData?.constraints || []),
+        hints: ch.hints?.length ? ch.hints : (mockData?.hints || []),
+        tags: mockData?.tags || [],
+        isPremium: ch.isPremium,
+        rubricCriteria: ch.rubric?.criteria?.length
+          ? ch.rubric.criteria.map((crit) => ({
+              name: crit.name,
+              weight: crit.weight,
+              description: crit.description,
+            }))
+          : (mockData?.rubricCriteria || []),
+      };
+    });
   } catch (error) {
     console.error("Error fetching challenges from DB", error);
     return [];
@@ -241,30 +250,37 @@ export async function getChallengeBySlug(slug: string) {
       },
     });
 
-    if (!ch) return null;
+    if (!ch) return mock.getChallengeBySlug(slug) || null;
+
+    const mockMatch = mock.getChallengeBySlug(slug);
+    const richFullDescription = (mockMatch?.fullDescription && mockMatch.fullDescription.length > (ch.description?.length || 0))
+      ? mockMatch.fullDescription
+      : (ch.description || mockMatch?.fullDescription || "");
 
     return {
       id: ch.id,
       title: ch.title,
       slug: ch.slug,
-      description: ch.description,
-      fullDescription: ch.description,
+      description: mockMatch?.description || ch.description,
+      fullDescription: richFullDescription,
       difficulty: ch.difficulty.charAt(0) + ch.difficulty.slice(1).toLowerCase() as any,
       category: ch.category.name,
       categorySlug: ch.category.slug,
       acceptanceRate: ch.acceptanceRate,
       totalSubmissions: ch.totalSubmissions,
-      starterPrompt: ch.starterPrompt || undefined,
-      testInputs: (ch.testInputs as any) || [],
-      constraints: ch.constraints ? ch.constraints.split("\n") : [],
-      hints: ch.hints || [],
-      tags: [],
+      starterPrompt: ch.starterPrompt || mockMatch?.starterPrompt || undefined,
+      testInputs: (ch.testInputs as any)?.length ? (ch.testInputs as any) : (mockMatch?.testInputs || []),
+      constraints: ch.constraints ? ch.constraints.split("\n") : (mockMatch?.constraints || []),
+      hints: ch.hints?.length ? ch.hints : (mockMatch?.hints || []),
+      tags: mockMatch?.tags || [],
       isPremium: ch.isPremium,
-      rubricCriteria: ch.rubric?.criteria.map((crit) => ({
-        name: crit.name,
-        weight: crit.weight,
-        description: crit.description,
-      })) || [],
+      rubricCriteria: ch.rubric?.criteria?.length
+        ? ch.rubric.criteria.map((crit) => ({
+            name: crit.name,
+            weight: crit.weight,
+            description: crit.description,
+          }))
+        : (mockMatch?.rubricCriteria || []),
     };
   } catch (error) {
     console.error(`Error fetching challenge by slug: ${slug}`, error);
