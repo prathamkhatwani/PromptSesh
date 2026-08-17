@@ -6,6 +6,8 @@ import { prisma } from "@/lib/db";
 import { findMockUserByEmail } from "@/lib/mock-data";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
+  secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || "promptsesh_nextauth_secret_key_2026",
   adapter: PrismaAdapter(prisma),
   providers: [
     GitHub({
