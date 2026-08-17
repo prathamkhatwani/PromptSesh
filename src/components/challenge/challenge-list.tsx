@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Lock,
   ArrowUpDown,
+  ChevronRight,
 } from "lucide-react";
 import { getDifficultyBg, formatNumber } from "@/lib/utils";
 
@@ -330,10 +331,48 @@ export function ChallengeList({
               <Link
                 key={challenge.id}
                 href={`/challenges/${challenge.slug}`}
-                className={`group grid grid-cols-1 sm:grid-cols-[44px_1fr_120px_200px_120px_120px] items-center gap-4 px-6 py-4 border-b border-white/[0.04] transition-all duration-200 hover:bg-white/[0.04] hover:border-cyan-500/30 ${
+                className={`group block sm:grid sm:grid-cols-[44px_1fr_120px_200px_120px_120px] sm:items-center sm:gap-4 p-4 sm:px-6 sm:py-4 border-b border-white/[0.05] transition-all duration-200 hover:bg-white/[0.04] hover:border-cyan-500/30 ${
                   idx % 2 === 0 ? "bg-transparent" : "bg-white/[0.01]"
                 }`}
               >
+                {/* ── MOBILE VIEW CARD (Visible on < sm) ──────────── */}
+                <div className="sm:hidden space-y-2.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                      {challenge.isCompleted ? (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+                      ) : challenge.isPremium ? (
+                        <Lock className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                      ) : (
+                        <div className="h-3.5 w-3.5 rounded-full border border-cyan-500/40 shrink-0 mt-1" />
+                      )}
+                      <h3 className="text-sm font-semibold text-slate-100 group-hover:text-cyan-400 transition-colors leading-snug">
+                        {challenge.title}
+                      </h3>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-slate-600 group-hover:text-cyan-400 transition-colors shrink-0 mt-0.5" />
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-wrap text-xs pt-1">
+                    <span
+                      className={`inline-flex rounded-md border px-2 py-0.5 text-[11px] font-semibold ${getDifficultyBg(
+                        challenge.difficulty
+                      )}`}
+                    >
+                      {challenge.difficulty}
+                    </span>
+                    <span className="text-[11px] text-slate-300 bg-white/[0.04] border border-white/[0.06] rounded-md px-2 py-0.5">
+                      {challenge.category}
+                    </span>
+                    <span className="text-[11px] text-slate-400 font-mono ml-auto">
+                      {challenge.totalSubmissions > 0
+                        ? `${challenge.acceptanceRate}% acc · ${formatNumber(challenge.totalSubmissions)} subs`
+                        : "New Lab"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* ── DESKTOP VIEW TABLE (Visible on >= sm) ───────── */}
                 {/* Status */}
                 <div className="hidden sm:block">
                   {challenge.isCompleted ? (
@@ -346,14 +385,14 @@ export function ChallengeList({
                 </div>
 
                 {/* Title */}
-                <div>
+                <div className="hidden sm:block">
                   <span className="text-sm font-medium text-slate-200 group-hover:text-white">
                     {challenge.title}
                   </span>
                 </div>
 
                 {/* Difficulty */}
-                <div>
+                <div className="hidden sm:block">
                   <span
                     className={`inline-flex rounded-md border px-2.5 py-0.5 text-xs font-medium ${getDifficultyBg(
                       challenge.difficulty
@@ -364,19 +403,19 @@ export function ChallengeList({
                 </div>
 
                 {/* Category */}
-                <div>
+                <div className="hidden sm:block">
                   <span className="text-xs text-slate-400 bg-white/[0.04] rounded-md px-2 py-1">
                     {challenge.category}
                   </span>
                 </div>
 
                 {/* Acceptance Rate */}
-                <div className="text-sm text-slate-400">
+                <div className="hidden sm:block text-sm text-slate-400">
                   {challenge.totalSubmissions > 0 ? `${challenge.acceptanceRate}%` : "New"}
                 </div>
 
                 {/* Submissions */}
-                <div className="text-sm text-slate-400 font-mono">
+                <div className="hidden sm:block text-sm text-slate-400 font-mono">
                   {challenge.totalSubmissions > 0 ? formatNumber(challenge.totalSubmissions) : "0"}
                 </div>
               </Link>
