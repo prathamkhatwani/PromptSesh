@@ -25,7 +25,7 @@ export async function checkDbConnection(): Promise<boolean> {
 
   try {
     const timeoutPromise = new Promise<boolean>((_, reject) =>
-      setTimeout(() => reject(new Error("DB Timeout")), 400)
+      setTimeout(() => reject(new Error("DB Timeout")), 3000)
     );
     const queryPromise = prisma.$queryRaw`SELECT 1`.then(() => true);
 

@@ -35,11 +35,17 @@ export default async function LeaderboardPage() {
                 RANK #2
               </div>
               <div className="relative inline-block mb-3 mt-4">
-                <img
-                  src={topThree[1].avatar}
-                  alt={topThree[1].name}
-                  className="h-20 w-20 rounded-full border-2 border-slate-300 shadow-lg mx-auto object-cover"
-                />
+                {topThree[1].avatar ? (
+                  <img
+                    src={topThree[1].avatar}
+                    alt={topThree[1].name}
+                    className="h-20 w-20 rounded-full border-2 border-slate-300 shadow-lg mx-auto object-cover"
+                  />
+                ) : (
+                  <div className="h-20 w-20 rounded-full border-2 border-slate-300 shadow-lg mx-auto flex items-center justify-center bg-slate-500/10 text-2xl font-bold text-slate-300">
+                    {topThree[1].name.charAt(0)}
+                  </div>
+                )}
                 <span className="absolute -bottom-2 right-0 bg-slate-300 text-dark-950 font-black text-xs h-6 w-6 rounded-full flex items-center justify-center shadow">
                   2
                 </span>
@@ -68,11 +74,17 @@ export default async function LeaderboardPage() {
                 <Crown className="h-3.5 w-3.5 text-amber-400" /> RANK #1
               </div>
               <div className="relative inline-block mb-3 mt-4">
-                <img
-                  src={topThree[0].avatar}
-                  alt={topThree[0].name}
-                  className="h-24 w-24 rounded-full border-4 border-amber-400 shadow-xl shadow-amber-500/20 mx-auto object-cover"
-                />
+                {topThree[0].avatar ? (
+                  <img
+                    src={topThree[0].avatar}
+                    alt={topThree[0].name}
+                    className="h-24 w-24 rounded-full border-4 border-amber-400 shadow-xl shadow-amber-500/20 mx-auto object-cover"
+                  />
+                ) : (
+                  <div className="h-24 w-24 rounded-full border-4 border-amber-400 shadow-xl shadow-amber-500/20 mx-auto flex items-center justify-center bg-amber-500/10 text-3xl font-bold text-amber-300">
+                    {topThree[0].name.charAt(0)}
+                  </div>
+                )}
                 <span className="absolute -bottom-2 right-1 bg-amber-400 text-dark-950 font-black text-xs h-7 w-7 rounded-full flex items-center justify-center shadow-lg">
                   1
                 </span>
@@ -101,11 +113,17 @@ export default async function LeaderboardPage() {
                 RANK #3
               </div>
               <div className="relative inline-block mb-3 mt-4">
-                <img
-                  src={topThree[2].avatar}
-                  alt={topThree[2].name}
-                  className="h-20 w-20 rounded-full border-2 border-amber-600 shadow-lg mx-auto object-cover"
-                />
+                {topThree[2].avatar ? (
+                  <img
+                    src={topThree[2].avatar}
+                    alt={topThree[2].name}
+                    className="h-20 w-20 rounded-full border-2 border-amber-600 shadow-lg mx-auto object-cover"
+                  />
+                ) : (
+                  <div className="h-20 w-20 rounded-full border-2 border-amber-600 shadow-lg mx-auto flex items-center justify-center bg-amber-700/10 text-2xl font-bold text-amber-500">
+                    {topThree[2].name.charAt(0)}
+                  </div>
+                )}
                 <span className="absolute -bottom-2 right-0 bg-amber-700 text-white font-black text-xs h-6 w-6 rounded-full flex items-center justify-center shadow">
                   3
                 </span>
@@ -162,7 +180,7 @@ export default async function LeaderboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.04] text-slate-300">
-                  {remaining.map((user) => (
+                  {(topThree.length >= 3 ? remaining : leaderboard).map((user) => (
                     <tr key={user.rank} className="hover:bg-white/[0.02] transition-colors">
                       <td className="px-6 py-4 font-mono font-bold text-slate-400">
                         #{user.rank}

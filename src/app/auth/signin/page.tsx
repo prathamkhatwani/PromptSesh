@@ -84,6 +84,7 @@ function SignInForm() {
     try {
       await signIn("demo", { callbackUrl });
     } catch (error) {
+      setNotice("Demo login failed. Please try again.");
     } finally {
       setLoading(null);
     }

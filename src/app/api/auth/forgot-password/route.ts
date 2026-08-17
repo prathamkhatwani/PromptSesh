@@ -37,13 +37,9 @@ export async function POST(req: Request) {
       }
     }
 
-    // Return friendly success message with test URL link
-    const resetUrl = `/auth/reset-password?token=${token}&email=${encodeURIComponent(trimmedEmail)}`;
-
     return NextResponse.json({
       success: true,
-      message: "If an account exists with this email, a password reset link has been generated.",
-      resetUrl, // Dev convenience URL for testing
+      message: "If an account exists with this email, instructions to reset your password have been sent.",
     });
   } catch (error: any) {
     console.error("Forgot password error:", error);

@@ -1,5 +1,11 @@
 import { getChallenges, getCategories } from "@/lib/queries";
 import { ChallengeList } from "@/components/challenge/challenge-list";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Challenges — PromptSesh",
+  description: "Browse and solve prompt engineering challenges across 10 skill categories. Filter by difficulty, search by keyword, and master AI prompting.",
+};
 
 export default async function ChallengesPage({
   searchParams,

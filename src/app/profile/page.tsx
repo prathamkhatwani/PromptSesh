@@ -236,43 +236,52 @@ export default async function ProfilePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.04] text-slate-300">
-                {submissions.map((sub: any) => (
-                  <tr key={sub.id} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="px-6 py-4">
-                      {sub.passed ? (
-                        <span className="inline-flex items-center gap-1.5 text-emerald-400 font-semibold">
-                          <CheckCircle2 className="h-4 w-4" /> Passed
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 text-amber-500 font-semibold">
-                          <XCircle className="h-4 w-4" /> Failed
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 font-medium text-white">
-                      <Link
-                        href={`/challenges/${sub.challengeSlug}`}
-                        className="hover:text-cyan-400 transition-colors"
-                      >
-                        {sub.challengeTitle}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex rounded-md border px-2 py-0.5 text-[10px] font-medium ${getDifficultyBg(sub.difficulty)}`}>
-                        {sub.difficulty}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 font-mono font-bold text-white">
-                      {sub.score}%
-                    </td>
-                    <td className="px-6 py-4 font-mono text-slate-400">
-                      {sub.modelName}
-                    </td>
-                    <td className="px-6 py-4 text-slate-500">
-                      {sub.createdAt}
+                {submissions.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
+                      <p className="text-sm font-medium mb-1">No prompt submissions recorded yet.</p>
+                      <p className="text-xs text-slate-500">Solve challenges to track your progress and score metrics!</p>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  submissions.map((sub: any) => (
+                    <tr key={sub.id} className="hover:bg-white/[0.02] transition-colors">
+                      <td className="px-6 py-4">
+                        {sub.passed ? (
+                          <span className="inline-flex items-center gap-1.5 text-emerald-400 font-semibold">
+                            <CheckCircle2 className="h-4 w-4" /> Passed
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 text-amber-500 font-semibold">
+                            <XCircle className="h-4 w-4" /> Failed
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 font-medium text-white">
+                        <Link
+                          href={`/challenges/${sub.challengeSlug}`}
+                          className="hover:text-cyan-400 transition-colors"
+                        >
+                          {sub.challengeTitle}
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex rounded-md border px-2 py-0.5 text-[10px] font-medium ${getDifficultyBg(sub.difficulty)}`}>
+                          {sub.difficulty}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 font-mono font-bold text-white">
+                        {sub.score}%
+                      </td>
+                      <td className="px-6 py-4 font-mono text-slate-400">
+                        {sub.modelName}
+                      </td>
+                      <td className="px-6 py-4 text-slate-500">
+                        {sub.createdAt}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

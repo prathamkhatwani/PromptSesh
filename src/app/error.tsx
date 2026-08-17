@@ -12,6 +12,10 @@ export default function ErrorPage({
   reset: () => void;
 }) {
   useEffect(() => {
+    // Log error to monitoring service in production
+    if (process.env.NODE_ENV === 'production') {
+      console.error('Application error:', error.message, error.digest);
+    }
   }, [error]);
 
   return (

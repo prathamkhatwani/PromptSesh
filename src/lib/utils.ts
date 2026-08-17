@@ -6,6 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function getDifficultyBg(difficulty: string): string {
+  if (!difficulty) return "";
   switch (difficulty.toLowerCase()) {
     case "easy":
       return "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20";
@@ -21,6 +22,7 @@ export function getDifficultyBg(difficulty: string): string {
 }
 
 export function getDifficultyDot(difficulty: string): string {
+  if (!difficulty) return "";
   switch (difficulty.toLowerCase()) {
     case "easy":
       return "bg-emerald-400";

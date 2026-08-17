@@ -36,14 +36,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           });
 
           if (user && user.passwordHash) {
-            const isValid = bcrypt.compareSync(password, user.passwordHash);
+            const isValid = await bcrypt.compare(password, user.passwordHash);
             if (isValid) {
               return {
                 id: user.id,
                 name: user.name || "Prompt Engineer",
                 email: user.email!,
                 image: user.image || undefined,
-              };
+                role: user.role || "USER",
+              } as any;
             }
             return null;
           }
@@ -54,14 +55,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // 2. Check Local/Mock Users store (dev & offline mode)
         const mockUser = findMockUserByEmail(email);
         if (mockUser && mockUser.passwordHash) {
-          const isValid = bcrypt.compareSync(password, mockUser.passwordHash);
+          const isValid = await bcrypt.compare(password, mockUser.passwordHash);
           if (isValid) {
             return {
               id: mockUser.id,
               name: mockUser.name,
               email: mockUser.email,
               image: mockUser.image,
-            };
+              role: mockUser.role || "USER",
+            } as any;
           }
           return null;
         }
@@ -73,7 +75,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             name: "Alex Rivera",
             email: "engineer@promptsesh.com",
             image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
-          };
+            role: "USER",
+          } as any;
         }
 
         return null;
@@ -92,7 +95,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: "Alex Rivera (Demo Engineer)",
           email: email,
           image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
-        };
+          role: "USER",
+        } as any;
       },
     }),
   ],
@@ -128,12 +132,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (token?.sub && session.user) {
         session.user.id = token.sub;
+        (session.user as any).role = (token as any).role || "USER";
       }
       return session;
     },
     async jwt({ token, user }) {
       if (user) {
         token.sub = user.id;
+        (token as any).role = (user as any).role || "USER";
       }
       return token;
     },

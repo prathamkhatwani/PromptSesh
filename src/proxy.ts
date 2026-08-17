@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Protect /admin routes
+  // Protect /admin routes — redirect unauthenticated users to sign in
   if (pathname.startsWith("/admin")) {
     const hasSessionToken =
       request.cookies.has("next-auth.session-token") ||

@@ -22,7 +22,6 @@ import {
   Copy,
   Check,
   RotateCcw,
-  Lightbulb,
 } from "lucide-react";
 import { getDifficultyBg } from "@/lib/utils";
 import type { MockChallenge } from "@/lib/mock-data";
@@ -53,6 +52,7 @@ export function ChallengeWorkspace({
   });
 
   useEffect(() => {
+    setPromptText(getInitialVariables());
     if (textareaRef.current) {
       textareaRef.current.focus();
       textareaRef.current.setSelectionRange(0, 0);
@@ -481,7 +481,7 @@ export function ChallengeWorkspace({
           </div>
 
           {/* Editor Area */}
-          <div className="flex-1 flex flex-col p-4 overflow-hidden min-h-0">
+          <div className="flex-1 flex flex-col p-4 overflow-hidden min-h-[200px]">
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">
                 Your Prompt Template
@@ -533,14 +533,14 @@ export function ChallengeWorkspace({
               value={promptText}
               onChange={(e) => setPromptText(e.target.value)}
               placeholder="Write your prompt instructions here..."
-              className="prompt-editor flex-1 w-full p-4 resize-none min-h-0"
+              className="prompt-editor flex-1 w-full p-4 resize-none min-h-[120px]"
               spellCheck={false}
             />
           </div>
 
           {/* ── Console / Results bottom drawer ────────── */}
           {showConsole && (
-            <div className="h-2/3 border-t border-white/[0.08] bg-dark-950 flex flex-col overflow-hidden">
+            <div className="h-[42%] max-h-[50%] min-h-[180px] shrink-0 border-t border-white/[0.08] bg-dark-950 flex flex-col overflow-hidden">
               {/* Drawer Tabs */}
               <div className="flex items-center justify-between px-4 border-b border-white/[0.06] bg-dark-900/60 shrink-0">
                 <div className="flex">

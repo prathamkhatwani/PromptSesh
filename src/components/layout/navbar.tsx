@@ -108,6 +108,7 @@ export function Navbar() {
             className="md:hidden p-2 text-slate-400 hover:text-white transition-colors cursor-pointer"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle Menu"
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? (
               <X className="h-5 w-5" />
@@ -125,16 +126,23 @@ export function Navbar() {
               { href: "/interview-simulator", label: "Interview" },
               { href: "/leaderboard", label: "Leaderboard" },
               { href: "/profile", label: "Profile" },
-            ].map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="block px-4 py-2.5 text-sm font-medium text-slate-400 rounded-lg transition-all hover:text-white hover:bg-white/[0.04]"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
+            ].map((link) => {
+              const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-all ${
+                    isActive
+                      ? "text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 font-semibold"
+                      : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
             <div className="pt-3 border-t border-white/[0.06] space-y-2 px-4">
               {loading ? (
                 <div className="h-10 w-full bg-white/5 animate-pulse rounded-lg" />

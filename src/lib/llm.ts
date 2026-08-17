@@ -152,6 +152,11 @@ export async function callModel(
       };
     } catch (error: any) {
       console.error("OpenRouter execution failed, falling back to mock:", error);
+      return {
+        text: `[Sandbox Fallback Output]\n(OpenRouter API failed: ${error.message || error}). Running in sandbox mode.`,
+        tokenCount: Math.ceil(prompt.length / 4) + 10,
+        executionTimeMs: Date.now() - startTime,
+      };
     }
   }
 
@@ -160,7 +165,7 @@ export async function callModel(
     try {
       const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
       const targetModel = "gemini-2.0-flash";
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent`;
 
       const contents = [{ parts: [{ text: prompt }] }];
       const systemInstruction = systemPrompt
@@ -169,7 +174,7 @@ export async function callModel(
 
       const response = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey! },
         body: JSON.stringify({ contents, systemInstruction }),
       });
 
@@ -287,11 +292,11 @@ Please evaluate the above model output against the user prompt template and rubr
   if (activeProvider === "gemini") {
     try {
       const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
 
       const response = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey! },
         body: JSON.stringify({
           contents: [{ parts: [{ text: userContent }] }],
           systemInstruction: { parts: [{ text: judgeSystemPrompt }] },

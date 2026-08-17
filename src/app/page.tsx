@@ -14,11 +14,16 @@ import {
   Sparkles,
   BarChart3,
   Layers,
+  Award,
+  Code,
+  UserCheck,
+  CheckSquare,
   type LucideIcon,
 } from "lucide-react";
 import { getChallenges, getCategories } from "@/lib/queries";
 
 const iconMap: Record<string, LucideIcon> = {
+  Award,
   Zap,
   GitBranch,
   Braces,
@@ -28,6 +33,10 @@ const iconMap: Record<string, LucideIcon> = {
   ShieldAlert,
   Minimize2,
   MessageSquare,
+  Layers,
+  Code,
+  UserCheck,
+  CheckSquare,
 };
 
 

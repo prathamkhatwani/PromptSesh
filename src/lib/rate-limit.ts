@@ -16,6 +16,16 @@ export function checkRateLimit(
   windowMs: number = 60000
 ): { success: boolean; limit: number; remaining: number; resetTime: number } {
   const now = Date.now();
+
+  // Periodic eviction of expired IP entries to prevent memory growth
+  if (rateLimitMap.size > 100) {
+    for (const [key, val] of rateLimitMap.entries()) {
+      if (now > val.resetTime) {
+        rateLimitMap.delete(key);
+      }
+    }
+  }
+
   const record = rateLimitMap.get(identifier);
 
   if (!record || now > record.resetTime) {

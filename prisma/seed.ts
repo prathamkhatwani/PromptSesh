@@ -10,9 +10,10 @@ async function main() {
   console.log("📦 Seeding categories...");
   for (const cat of categories) {
     await prisma.category.upsert({
-      where: { slug: cat.slug },
+      where: { id: cat.id },
       update: {
         name: cat.name,
+        slug: cat.slug,
         description: cat.description,
         icon: cat.icon,
         color: cat.color,
@@ -28,14 +29,16 @@ async function main() {
     });
   }
 
-  // 2. Seed Challenges, Rubrics, and Criteria
+  // 2. Build Category Lookup Map
+  const allDbCategories = await prisma.category.findMany();
+  const categoryMap = new Map<string, string>(allDbCategories.map((c) => [c.slug, c.id]));
+
+  // 3. Seed Challenges, Rubrics, and Criteria
   console.log("🎯 Seeding challenges and rubrics...");
   for (const item of challenges) {
-    const category = await prisma.category.findUnique({
-      where: { slug: item.categorySlug },
-    });
+    const categoryId = categoryMap.get(item.categorySlug);
 
-    if (!category) {
+    if (!categoryId) {
       console.warn(`Category slug '${item.categorySlug}' not found for challenge '${item.title}'. Skipping.`);
       continue;
     }
@@ -51,10 +54,11 @@ async function main() {
       where: { slug: item.slug },
       update: {
         title: item.title,
-        description: item.description,
+        description: item.fullDescription || item.description,
         difficulty: difficultyEnum,
-        categoryId: category.id,
+        categoryId: categoryId,
         starterPrompt: item.starterPrompt || undefined,
+        testInputs: item.testInputs || [],
         constraints: item.constraints ? item.constraints.join("\n") : undefined,
         hints: item.hints || [],
         isPublished: true,
@@ -63,10 +67,11 @@ async function main() {
         id: item.id,
         title: item.title,
         slug: item.slug,
-        description: item.description,
+        description: item.fullDescription || item.description,
         difficulty: difficultyEnum,
-        categoryId: category.id,
+        categoryId: categoryId,
         starterPrompt: item.starterPrompt || undefined,
+        testInputs: item.testInputs || [],
         constraints: item.constraints ? item.constraints.join("\n") : undefined,
         hints: item.hints || [],
         isPublished: true,
@@ -88,17 +93,15 @@ async function main() {
         where: { rubricId: rubric.id },
       });
 
-      for (const crit of item.rubricCriteria) {
-        await prisma.rubricCriterion.create({
-          data: {
-            rubricId: rubric.id,
-            name: crit.name,
-            weight: crit.weight,
-            description: crit.description,
-            evaluationPrompt: `Evaluate response accuracy and quality against criterion: ${crit.name}`,
-          },
-        });
-      }
+      await prisma.rubricCriterion.createMany({
+        data: item.rubricCriteria.map((crit) => ({
+          rubricId: rubric.id,
+          name: crit.name,
+          weight: crit.weight,
+          description: crit.description,
+          evaluationPrompt: `Evaluate response accuracy and quality against criterion: ${crit.name}`,
+        })),
+      });
     }
   }
 
