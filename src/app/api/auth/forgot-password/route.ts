@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { checkDbConnection } from "@/lib/queries";
 import crypto from "crypto";
 import { forgotPasswordSchema } from "@/lib/validations/auth";
+import { sendPasswordResetEmail } from "@/lib/email";
 
 export async function POST(req: Request) {
   try {
@@ -19,6 +20,7 @@ export async function POST(req: Request) {
 
     const { email } = parseResult.data;
     const isDbConnected = await checkDbConnection();
+    let devPreviewUrl: string | false | undefined = undefined;
 
     if (isDbConnected) {
       const user = await prisma.user.findFirst({
@@ -27,7 +29,7 @@ export async function POST(req: Request) {
 
       if (user) {
         const token = crypto.randomBytes(32).toString("hex");
-        const expiry = new Date(Date.now() + 3600000); // 1 hour
+        const expiry = new Date(Date.now() + 3600000); // 1 hour validity
 
         await prisma.user.update({
           where: { id: user.id },
@@ -37,22 +39,38 @@ export async function POST(req: Request) {
           },
         });
 
-        const resetUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/auth/reset-password?token=${token}`;
+        const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+        const resetUrl = `${baseUrl}/auth/reset-password?token=${token}`;
 
-        // TODO: Send email via transactional email service (Resend, SendGrid, etc.)
-        // For development/debugging purposes only:
-        if (process.env.NODE_ENV !== "production") {
-          console.log(`[AUTH][DEV-ONLY] Password reset link for ${email}: ${resetUrl}`);
+        // Dispatch email via Resend / SMTP / Ethereal Dev Transport
+        try {
+          const emailResult = await sendPasswordResetEmail({
+            to: email,
+            resetUrl,
+          });
+          if (emailResult.previewUrl) {
+            devPreviewUrl = emailResult.previewUrl;
+          }
+        } catch (emailErr) {
+          console.error("[AUTH] Failed to send password reset email:", emailErr);
         }
+      } else {
+        console.log(`[AUTH] Password reset requested for unregistered email: ${email}`);
       }
-      // If user not found, do not reveal — return same generic success to prevent email enumeration
     }
 
-    // Always return generic success message to prevent user enumeration
-    return NextResponse.json({
+    // Return generic success message to prevent user enumeration
+    const responsePayload: { success: boolean; message: string; devPreviewUrl?: string } = {
       success: true,
       message: "If an account with that email exists, a password reset link has been sent. Please check your inbox and spam folder.",
-    });
+    };
+
+    // In local development, attach ethereal preview link if available
+    if (process.env.NODE_ENV !== "production" && devPreviewUrl) {
+      responsePayload.devPreviewUrl = devPreviewUrl;
+    }
+
+    return NextResponse.json(responsePayload);
   } catch (error: any) {
     console.error("Forgot password error:", error);
     return NextResponse.json(

@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Terminal, Loader2, Info, CheckCircle2, ArrowLeft } from "lucide-react";
+import { Terminal, Loader2, Info, CheckCircle2, ArrowLeft, Mail } from "lucide-react";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [devPreviewUrl, setDevPreviewUrl] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +22,7 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setError(null);
     setSuccess(null);
+    setDevPreviewUrl(null);
 
     try {
       const res = await fetch("/api/auth/forgot-password", {
@@ -36,6 +38,9 @@ export default function ForgotPasswordPage() {
       }
 
       setSuccess(data.message || "Password reset instructions have been generated.");
+      if (data.devPreviewUrl) {
+        setDevPreviewUrl(data.devPreviewUrl);
+      }
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
     } finally {
@@ -84,6 +89,25 @@ export default function ForgotPasswordPage() {
               <span>{success}</span>
             </div>
 
+            {devPreviewUrl && (
+              <div className="p-3.5 bg-dark-900/90 border border-cyan-500/30 rounded-xl text-xs space-y-2">
+                <div className="flex items-center gap-1.5 font-semibold text-cyan-400 text-xs">
+                  <Mail className="h-3.5 w-3.5" />
+                  <span>Dev Test Mailbox:</span>
+                </div>
+                <p className="text-slate-400 text-[11px]">
+                  Real email delivery active! In local development without external SMTP configured, your email is captured by the test inbox:
+                </p>
+                <a
+                  href={devPreviewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-cyan-400 hover:text-cyan-300 font-semibold underline text-xs break-all"
+                >
+                  Open Email in Web Inbox &rarr;
+                </a>
+              </div>
+            )}
           </div>
         )}
 
