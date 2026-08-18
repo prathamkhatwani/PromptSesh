@@ -140,24 +140,24 @@ export function ChallengeList({
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="bg-dark-900 border border-white/[0.06] rounded-xl px-4 py-2.5 text-center shrink-0">
-              <div className="text-xl font-extrabold text-cyan-400 font-mono">{initialChallenges.length}</div>
-              <div className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Total Labs</div>
+          <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar py-1">
+            <div className="bg-dark-900 border border-white/[0.06] rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 text-center shrink-0 min-w-[75px] sm:min-w-[90px]">
+              <div className="text-lg sm:text-xl font-extrabold text-cyan-400 font-mono">{initialChallenges.length}</div>
+              <div className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Total Labs</div>
             </div>
-            <div className="bg-dark-900 border border-white/[0.06] rounded-xl px-4 py-2.5 text-center shrink-0">
-              <div className="text-xl font-extrabold text-purple-400 font-mono">{initialCategories.length}</div>
-              <div className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Categories</div>
+            <div className="bg-dark-900 border border-white/[0.06] rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 text-center shrink-0 min-w-[75px] sm:min-w-[90px]">
+              <div className="text-lg sm:text-xl font-extrabold text-purple-400 font-mono">{initialCategories.length}</div>
+              <div className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Categories</div>
             </div>
-            <div className="bg-dark-900 border border-white/[0.06] rounded-xl px-4 py-2.5 text-center shrink-0">
-              <div className="text-xl font-extrabold text-emerald-400 font-mono">4</div>
-              <div className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Tiers</div>
+            <div className="bg-dark-900 border border-white/[0.06] rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 text-center shrink-0 min-w-[75px] sm:min-w-[90px]">
+              <div className="text-lg sm:text-xl font-extrabold text-emerald-400 font-mono">4</div>
+              <div className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Tiers</div>
             </div>
           </div>
         </div>
 
         {/* Filters & Categories Toolbar */}
-        <div className="glass-card p-5 mb-8 space-y-4">
+        <div className="glass-card p-4 sm:p-5 mb-8 space-y-4">
           {/* Top Control Bar: Search & Difficulty */}
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
             {/* Search Input */}
@@ -199,7 +199,7 @@ export function ChallengeList({
                   <button
                     key={diff}
                     onClick={() => setSelectedDifficulty(diff)}
-                    className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all shrink-0 ${colorClasses}`}
+                    className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all shrink-0 cursor-pointer ${colorClasses}`}
                   >
                     {diff === "All" ? "All Tiers" : diff.charAt(0) + diff.slice(1).toLowerCase()}
                   </button>
@@ -213,7 +213,7 @@ export function ChallengeList({
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 scroll-smooth">
               <button
                 onClick={() => setSelectedCategory("All")}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-medium shrink-0 transition-all flex items-center gap-1.5 ${
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-medium shrink-0 transition-all flex items-center gap-1.5 cursor-pointer ${
                   selectedCategory === "All"
                     ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold shadow-md shadow-cyan-500/20"
                     : "bg-white/[0.03] text-slate-400 hover:text-white hover:bg-white/[0.06] border border-white/[0.05]"
@@ -232,7 +232,7 @@ export function ChallengeList({
                   <button
                     key={cat.slug}
                     onClick={() => setSelectedCategory(cat.slug)}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-medium shrink-0 transition-all flex items-center gap-1.5 ${
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-medium shrink-0 transition-all flex items-center gap-1.5 cursor-pointer ${
                       isActive
                         ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold shadow-md shadow-cyan-500/20"
                         : "bg-white/[0.03] text-slate-400 hover:text-white hover:bg-white/[0.06] border border-white/[0.05]"
@@ -277,7 +277,7 @@ export function ChallengeList({
                   setSelectedDifficulty("All");
                   setSelectedCategory("All");
                 }}
-                className="text-cyan-400 hover:text-cyan-300 transition-colors font-medium text-xs underline underline-offset-4"
+                className="text-cyan-400 hover:text-cyan-300 transition-colors font-medium text-xs underline underline-offset-4 cursor-pointer"
               >
                 Clear all filters
               </button>
@@ -292,14 +292,14 @@ export function ChallengeList({
             <div>Status</div>
             <button
               onClick={() => handleSort("title")}
-              className="flex items-center gap-1 hover:text-slate-300 transition-colors text-left"
+              className="flex items-center gap-1 hover:text-slate-300 transition-colors text-left cursor-pointer"
             >
               Title
               <ArrowUpDown className="h-3 w-3" />
             </button>
             <button
               onClick={() => handleSort("difficulty")}
-              className="flex items-center gap-1 hover:text-slate-300 transition-colors"
+              className="flex items-center gap-1 hover:text-slate-300 transition-colors cursor-pointer"
             >
               Difficulty
               <ArrowUpDown className="h-3 w-3" />
@@ -307,14 +307,14 @@ export function ChallengeList({
             <div>Category</div>
             <button
               onClick={() => handleSort("acceptanceRate")}
-              className="flex items-center gap-1 hover:text-slate-300 transition-colors"
+              className="flex items-center gap-1 hover:text-slate-300 transition-colors cursor-pointer"
             >
               Acceptance
               <ArrowUpDown className="h-3 w-3" />
             </button>
             <button
               onClick={() => handleSort("totalSubmissions")}
-              className="flex items-center gap-1 hover:text-slate-300 transition-colors"
+              className="flex items-center gap-1 hover:text-slate-300 transition-colors cursor-pointer"
             >
               Submissions
               <ArrowUpDown className="h-3 w-3" />
@@ -336,39 +336,52 @@ export function ChallengeList({
                 }`}
               >
                 {/* ── MOBILE VIEW CARD (Visible on < sm) ──────────── */}
-                <div className="sm:hidden space-y-2.5">
-                  <div className="flex items-start justify-between gap-3">
+                <div className="sm:hidden space-y-3">
+                  {/* Top row: Category tag & Difficulty badge */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-semibold text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 rounded-md px-2.5 py-0.5 truncate max-w-[200px]">
+                      {challenge.category}
+                    </span>
+                    <span
+                      className={`inline-flex rounded-md border px-2 py-0.5 text-[11px] font-semibold shrink-0 ${getDifficultyBg(
+                        challenge.difficulty
+                      )}`}
+                    >
+                      {challenge.difficulty}
+                    </span>
+                  </div>
+
+                  {/* Middle row: Status icon + Challenge Title + Arrow */}
+                  <div className="flex items-start justify-between gap-2.5">
                     <div className="flex items-start gap-2.5 flex-1 min-w-0">
                       {challenge.isCompleted ? (
                         <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
                       ) : challenge.isPremium ? (
                         <Lock className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
                       ) : (
-                        <div className="h-3.5 w-3.5 rounded-full border border-cyan-500/40 shrink-0 mt-1" />
+                        <div className="h-2.5 w-2.5 rounded-full bg-cyan-400 shrink-0 mt-1.5 ring-4 ring-cyan-500/10" />
                       )}
-                      <h3 className="text-sm font-semibold text-slate-100 group-hover:text-cyan-400 transition-colors leading-snug">
+                      <h3 className="text-sm font-semibold text-slate-100 group-hover:text-cyan-300 transition-colors leading-snug">
                         {challenge.title}
                       </h3>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-slate-600 group-hover:text-cyan-400 transition-colors shrink-0 mt-0.5" />
+                    <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-cyan-400 group-hover:translate-x-0.5 transition-all shrink-0 mt-0.5" />
                   </div>
 
-                  <div className="flex items-center gap-2 flex-wrap text-xs pt-1">
-                    <span
-                      className={`inline-flex rounded-md border px-2 py-0.5 text-[11px] font-semibold ${getDifficultyBg(
-                        challenge.difficulty
-                      )}`}
-                    >
-                      {challenge.difficulty}
-                    </span>
-                    <span className="text-[11px] text-slate-300 bg-white/[0.04] border border-white/[0.06] rounded-md px-2 py-0.5">
-                      {challenge.category}
-                    </span>
-                    <span className="text-[11px] text-slate-400 font-mono ml-auto">
-                      {challenge.totalSubmissions > 0
-                        ? `${challenge.acceptanceRate}% acc · ${formatNumber(challenge.totalSubmissions)} subs`
-                        : "New Lab"}
-                    </span>
+                  {/* Bottom metrics row */}
+                  <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-white/[0.04]">
+                    <div className="flex items-center gap-1.5 font-mono text-[11px]">
+                      <span className="text-slate-500">Acceptance:</span>
+                      <span className="text-slate-300 font-semibold">
+                        {challenge.totalSubmissions > 0 ? `${challenge.acceptanceRate}%` : "New Lab"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 font-mono text-[11px]">
+                      <span className="text-slate-500">Submissions:</span>
+                      <span className="text-slate-300 font-semibold">
+                        {challenge.totalSubmissions > 0 ? formatNumber(challenge.totalSubmissions) : "0"}
+                      </span>
+                    </div>
                   </div>
                 </div>
 

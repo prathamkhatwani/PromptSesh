@@ -221,11 +221,11 @@ export default async function HomePage() {
                 <Link
                   key={cat.id}
                   href={`/challenges?category=${cat.slug}`}
-                  className="glass-card-hover p-6 group"
+                  className="glass-card-hover p-5 sm:p-6 group relative rounded-2xl border border-white/[0.06] bg-dark-900/60 hover:bg-dark-900 transition-all shadow-lg hover:shadow-cyan-500/10 hover:border-cyan-500/30"
                 >
                   <div className="flex items-start gap-4">
                     <div
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] shadow-inner"
                       style={{
                         backgroundColor: `${cat.color}15`,
                         color: cat.color,
@@ -233,18 +233,30 @@ export default async function HomePage() {
                     >
                       <Icon className="h-5 w-5" />
                     </div>
-                    <div className="min-w-0">
-                      <h3 className="text-sm font-semibold text-white mb-1 group-hover:text-cyan-300 transition-colors">
-                        {cat.name}
-                      </h3>
-                      <p className="text-xs text-slate-500 leading-relaxed mb-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <h3 className="text-sm font-bold text-white group-hover:text-cyan-300 transition-colors">
+                          {cat.name}
+                        </h3>
+                        <span
+                          className="text-[10px] font-bold font-mono shrink-0 px-2 py-0.5 rounded-full border"
+                          style={{
+                            color: cat.color,
+                            borderColor: `${cat.color}30`,
+                            backgroundColor: `${cat.color}10`,
+                          }}
+                        >
+                          {cat.challengeCount} Labs
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-400 leading-relaxed mb-3 line-clamp-2">
                         {cat.description}
                       </p>
                       <span
-                        className="text-xs font-medium inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform"
+                        className="text-xs font-semibold inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform"
                         style={{ color: cat.color }}
                       >
-                        {cat.challengeCount} challenges →
+                        Explore Labs →
                       </span>
                     </div>
                   </div>
