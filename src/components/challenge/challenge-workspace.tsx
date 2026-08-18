@@ -28,10 +28,8 @@ import type { MockChallenge } from "@/lib/mock-data";
 import { generateSolutionFramework } from "@/lib/scraper";
 
 const models = [
-  { id: "llama-3.3-70b", name: "Llama 3.3 70B (Free)", provider: "Meta / OpenRouter", color: "#0081fb" },
-  { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash (Free)", provider: "Google / OpenRouter", color: "#4285f4" },
-  { id: "gpt4", name: "GPT-4o", provider: "OpenAI", color: "#74aa9c" },
-  { id: "claude", name: "Claude 3.5 Sonnet", provider: "Anthropic", color: "#d4a574" },
+  { id: "llama-3.3-70b", name: "Llama 3.3 70B (Free)", provider: "Meta", color: "#0081fb" },
+  { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash (Free)", provider: "Google", color: "#00f0ff" },
 ];
 
 export function ChallengeWorkspace({
@@ -59,7 +57,7 @@ export function ChallengeWorkspace({
     }
   }, [challenge.id]);
 
-  const [selectedModel, setSelectedModel] = useState("llama-3.3-70b");
+  const [selectedModel, setSelectedModel] = useState("gemini-2.0-flash");
   const [crossModelEnabled, setCrossModelEnabled] = useState(false);
   const [hintsVisible, setHintsVisible] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -588,8 +586,8 @@ export function ChallengeWorkspace({
                   }
                 }
               }}
-              placeholder="Write your prompt instructions here... (Press ⌘+Enter or Ctrl+Enter to test)"
-              className="prompt-editor flex-1 w-full p-4 resize-none min-h-[120px]"
+              placeholder="Write your system prompt instructions here... (Press ⌘+Enter or Ctrl+Enter to test)"
+              className="prompt-studio-editor flex-1 w-full p-4 resize-none min-h-[140px]"
               spellCheck={false}
             />
           </div>
@@ -801,42 +799,42 @@ export function ChallengeWorkspace({
           )}
 
           {/* Action Buttons */}
-          <div className="border-t border-white/[0.06] px-4 py-3 flex items-center justify-between shrink-0">
-            <div className="text-xs text-slate-500">
+          <div className="border-t border-white/[0.08] bg-dark-950/95 backdrop-blur-md px-4 py-3 flex items-center justify-between shrink-0 sticky bottom-0 z-20">
+            <div className="text-xs text-slate-400 font-mono hidden sm:block">
               {promptText.length > 0 ? (
                 <span>
-                  {promptText.length} characters · ~{tokenEstimate} tokens
+                  {promptText.length} chars · ~{tokenEstimate} tokens
                 </span>
               ) : (
-                <span>Start typing your prompt...</span>
+                <span>Type prompt instructions above</span>
               )}
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 sm:gap-3 w-full sm:w-auto justify-end">
               <button
                 onClick={() => {
-                  setShowConsole(true);
-                  setConsoleTab("testcase");
+                  setShowConsole(!showConsole);
+                  if (!showConsole) setConsoleTab("testcase");
                 }}
-                className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white px-2.5 py-1.5 rounded hover:bg-white/[0.04] transition-all cursor-pointer"
+                className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white px-2.5 py-2 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] transition-all cursor-pointer"
               >
                 <ChevronUp className={`h-4 w-4 transition-transform ${showConsole ? "rotate-180" : ""}`} />
-                Console
+                <span>Console</span>
               </button>
               <button
                 disabled={loading}
                 onClick={runGradingPipeline}
-                className="inline-flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.03] px-4 py-2 text-sm font-medium text-slate-300 transition-all hover:bg-white/[0.06] hover:text-white disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-4 py-2 text-xs sm:text-sm font-semibold text-cyan-300 transition-all hover:bg-cyan-500/20 hover:text-white hover:border-cyan-500/50 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer shadow-sm"
               >
-                <Play className="h-3.5 w-3.5" />
-                Run Tests
+                <Play className="h-3.5 w-3.5 fill-cyan-400/20" />
+                <span>Run Tests</span>
               </button>
               <button
                 disabled={loading}
                 onClick={runGradingPipeline}
-                className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-cyan-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition-all hover:shadow-emerald-500/40 hover:brightness-110 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 px-5 py-2 text-xs sm:text-sm font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:shadow-emerald-500/35 hover:brightness-110 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
               >
                 <Send className="h-3.5 w-3.5" />
-                Submit
+                <span>Submit</span>
               </button>
             </div>
           </div>

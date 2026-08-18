@@ -5,14 +5,23 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db";
 import { findMockUserByEmail } from "@/lib/mock-data";
 
+const rawGithubId = (process.env.GITHUB_ID || "").replace(/^["']|["']$/g, "").trim();
+const rawGithubSecret = (process.env.GITHUB_SECRET || "").replace(/^["']|["']$/g, "").trim();
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
-  secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || "promptsesh_nextauth_secret_key_2026",
+  secret: (() => {
+    const s = (process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || "").replace(/^["']|["']$/g, "").trim();
+    if (!s && process.env.NODE_ENV === "production") {
+      throw new Error("[FATAL] NEXTAUTH_SECRET or AUTH_SECRET must be set in production. Refusing to start with an insecure default.");
+    }
+    return s || "dev-only-insecure-secret-do-not-use-in-prod";
+  })(),
   adapter: PrismaAdapter(prisma),
   providers: [
     GitHub({
-      clientId: process.env.GITHUB_ID || "dummy_github_id",
-      clientSecret: process.env.GITHUB_SECRET || "dummy_github_secret",
+      clientId: rawGithubId || "dummy_github_id",
+      clientSecret: rawGithubSecret || "dummy_github_secret",
     }),
     Credentials({
       id: "credentials",
@@ -51,7 +60,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             return null;
           }
         } catch (err) {
-          // Gracefully fall back to local mock Users store if database is offline
+          console.warn("[AUTH] Database lookup failed, falling back to mock store:", (err as Error).message);
         }
 
         // 2. Check Local/Mock Users store (dev & offline mode)
@@ -90,14 +99,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
       },
-      async authorize(credentials) {
-        const email = (credentials?.email as string) || "engineer@promptsesh.com";
+      async authorize() {
+        // Demo login is disabled in production to prevent unauthenticated access
+        if (process.env.NODE_ENV === "production") {
+          return null;
+        }
+        // Always return the fixed demo identity — ignore any user-supplied email
         return {
           id: "usr_demo_101",
-          name: "Alex Rivera (Demo Engineer)",
-          email: email,
+          name: "Alex Rivera (Demo)",
+          email: "engineer@promptsesh.com",
           image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
-          role: "USER",
+          role: "DEMO",
         } as any;
       },
     }),
@@ -126,7 +139,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             });
           }
         } catch (e) {
-          // Gracefully continue if DB offline during mock testing
+          console.warn("[AUTH] Streak creation failed (DB may be offline):", (e as Error).message);
         }
       }
       return true;

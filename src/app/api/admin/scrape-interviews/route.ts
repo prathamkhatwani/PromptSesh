@@ -5,12 +5,14 @@ import { auth } from "@/lib/auth";
 export async function POST() {
   try {
     const session = await auth();
-    const user = session?.user as any;
-    const isDev = process.env.NODE_ENV === "development";
-    const isAdmin = user?.role === "ADMIN" || user?.email === "admin@promptcode.com" || user?.email === "admin@promptsesh.com";
+    // Strictly require authenticated ADMIN session — no email or dev bypass
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized — authentication required." }, { status: 401 });
+    }
 
-    if (!isDev && (!session || !isAdmin)) {
-      return NextResponse.json({ error: "Unauthorized. Administrator privileges required." }, { status: 403 });
+    const user = session.user as any;
+    if (user?.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden — administrator privileges required." }, { status: 403 });
     }
 
     const rawQuestions = await fetchLiveInterviewQuestions();

@@ -3,28 +3,24 @@ import { prisma } from "@/lib/db";
 import { checkDbConnection } from "@/lib/queries";
 import { findMockUserByEmail, createMockUser } from "@/lib/mock-data";
 import bcrypt from "bcryptjs";
+import { signupSchema } from "@/lib/validations/auth";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, email, password } = body;
+    const parseResult = signupSchema.safeParse(body);
 
-    const trimmedEmail = (email || "").toLowerCase().trim();
-    const trimmedName = (name || "").trim();
-
-    if (!trimmedEmail || !password) {
+    if (!parseResult.success) {
+      const errorMessage = parseResult.error.issues[0]?.message || "Invalid registration details.";
       return NextResponse.json(
-        { error: "Email and password are required." },
+        { error: errorMessage, details: parseResult.error.issues },
         { status: 400 }
       );
     }
 
-    if (password.length < 6) {
-      return NextResponse.json(
-        { error: "Password must be at least 6 characters long." },
-        { status: 400 }
-      );
-    }
+    const { name, email, password } = parseResult.data;
+    const trimmedName = name || "Prompt Engineer";
+    const trimmedEmail = email;
 
     const isDbConnected = await checkDbConnection();
 
@@ -42,11 +38,11 @@ export async function POST(req: Request) {
       }
 
       // Hash password & create user
-      const passwordHash = bcrypt.hashSync(password, 10);
+      const passwordHash = bcrypt.hashSync(password, 12);
 
       const newUser = await prisma.user.create({
         data: {
-          name: trimmedName || "Prompt Engineer",
+          name: trimmedName,
           email: trimmedEmail,
           passwordHash,
           image: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(trimmedName || trimmedEmail)}`,
@@ -64,7 +60,7 @@ export async function POST(req: Request) {
           },
         });
       } catch (e) {
-        // Ignore duplicate streak error if present
+        console.warn("[AUTH] Streak initialization skipped:", (e as Error).message);
       }
 
       return NextResponse.json({
@@ -86,7 +82,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const passwordHash = bcrypt.hashSync(password, 10);
+    const passwordHash = bcrypt.hashSync(password, 12);
     const mockUser = createMockUser({
       name: trimmedName,
       email: trimmedEmail,

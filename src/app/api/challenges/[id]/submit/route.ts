@@ -5,16 +5,20 @@ import { compilePrompt, callModel, callJudge } from "@/lib/llm";
 import { SubmissionStatus } from "@prisma/client";
 import * as mock from "@/lib/mock-data";
 import { checkDbConnection } from "@/lib/queries";
-
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rate-limit";
+import { submitChallengeSchema } from "@/lib/validations/challenge";
 
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const ip = req.headers.get("x-forwarded-for") || "client-ip";
-    const rateLimitResult = checkRateLimit(ip, 10, 60000);
+    const session = await auth();
+    const userId = session?.user?.id || null;
+
+    // Rate limit: prefer authenticated userId over spoofable x-forwarded-for
+    const rateLimitKey = getRateLimitIdentifier(req, userId);
+    const rateLimitResult = await checkRateLimit(rateLimitKey, 10, 60000);
     if (!rateLimitResult.success) {
       return NextResponse.json(
         { error: "Rate limit exceeded. You can make up to 10 prompt evaluations per minute." },
@@ -24,7 +28,17 @@ export async function POST(
 
     const { id } = await params;
     const body = await req.json();
-    const { promptText, modelId = "gemini", crossModel = false } = body;
+    const parseResult = submitChallengeSchema.safeParse(body);
+
+    if (!parseResult.success) {
+      const errorMessage = parseResult.error.issues[0]?.message || "Invalid submission payload.";
+      return NextResponse.json(
+        { error: errorMessage, details: parseResult.error.issues },
+        { status: 400 }
+      );
+    }
+
+    const { promptText, modelId = "gemini-2.0-flash", crossModel = false } = parseResult.data;
 
     const customInstructions = promptText
       .replace(/\{\{.*?\}\}/g, "")
@@ -54,19 +68,42 @@ export async function POST(
       const testCase = testCases[0] || {};
       const compiledPrompt = compilePrompt(promptText, testCase);
 
-      // Model execution mock call
-      const modelExecution = await callModel(
-        "Google",
-        "gemini-2.0-flash",
-        compiledPrompt,
-        mockChallenge.constraints ? mockChallenge.constraints.join("\n") : undefined
+      const isLlamaSelected = (modelId || "").toLowerCase().includes("llama");
+      const targetModelsToRun = crossModel
+        ? [
+            { provider: "Meta", name: "llama-3.3-70b" },
+            { provider: "Google", name: "gemini-2.0-flash" },
+          ]
+        : [
+            {
+              provider: isLlamaSelected ? "Meta" : "Google",
+              name: isLlamaSelected ? "llama-3.3-70b" : "gemini-2.0-flash",
+            },
+          ];
+
+      // Model execution across requested targets
+      const executions = await Promise.all(
+        targetModelsToRun.map(async (m) => {
+          const res = await callModel(
+            m.provider,
+            m.name,
+            compiledPrompt,
+            mockChallenge.constraints ? mockChallenge.constraints.join("\n") : undefined
+          );
+          return {
+            ...m,
+            ...res,
+          };
+        })
       );
+
+      const primaryExecution = executions[0];
 
       // Call judge evaluation (uses mock heuristic when API key is missing)
       const judgeGrades = await callJudge(
         mockChallenge.rubricCriteria,
         promptText,
-        modelExecution.text
+        primaryExecution.text
       );
 
       // Calculate aggregate weighted scores
@@ -97,22 +134,20 @@ export async function POST(
         status: "COMPLETED",
         totalScore,
         passed: totalScore >= 70,
-        tokenCount: modelExecution.tokenCount,
-        executionTime: modelExecution.executionTimeMs,
+        tokenCount: primaryExecution.tokenCount,
+        executionTime: primaryExecution.executionTimeMs,
         scores: mockScoresList,
-        modelTestResults: [
-          {
-            id: "mock-res-id",
-            submissionId: "mock-sub-id",
-            modelProvider: "Google",
-            modelName: "gemini-2.0-flash",
-            compiledPrompt: compiledPrompt,
-            rawOutput: modelExecution.text,
-            latencyMs: modelExecution.executionTimeMs,
-            score: totalScore,
-            passed: totalScore >= 70,
-          },
-        ],
+        modelTestResults: executions.map((exec, idx) => ({
+          id: `mock-res-${idx}`,
+          submissionId: "mock-sub-id",
+          modelProvider: exec.provider,
+          modelName: exec.name,
+          compiledPrompt: compiledPrompt,
+          rawOutput: exec.text,
+          latencyMs: exec.executionTimeMs,
+          score: totalScore,
+          passed: totalScore >= 70,
+        })),
         cached: false,
       };
 
@@ -129,27 +164,25 @@ export async function POST(
     }
 
     // ───────────────── LIVE DATABASE CONNECTED FLOW ─────────────────
-    const session = await auth();
-    const userId = session?.user?.id;
-
-    if (!userId && process.env.NODE_ENV === "production") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized — sign in required" }, { status: 401 });
     }
 
-    const finalUserId = userId || "dev-user-id";
-
-    // Guarantee dev user exists in database
-    if (!userId && process.env.NODE_ENV !== "production") {
+    // Ensure demo user exists in DB if logging in via demo provider
+    const userRole = (session?.user as any)?.role;
+    if (userRole === "DEMO") {
       await prisma.user.upsert({
-        where: { id: finalUserId },
+        where: { id: userId },
         update: {},
         create: {
-          id: finalUserId,
-          name: "Developer",
-          email: "dev@promptsesh.dev",
+          id: userId,
+          name: session?.user?.name || "Demo User",
+          email: session?.user?.email || "demo@promptsesh.com",
         },
       });
     }
+
+    const finalUserId = userId;
 
     // Fetch challenge & criteria
     const challenge = await prisma.challenge.findUnique({
@@ -204,27 +237,42 @@ export async function POST(
     }
 
     // Parse test cases
-    const testCases: Record<string, string>[] = (challenge.testInputs as any) || [{}];
-    const testCase = testCases[0] || {};
+    const testCases = (challenge.testInputs as any) || [{}];
+    const testCase = (Array.isArray(testCases) ? testCases[0] : testCases) || {};
     const compiledPrompt = compilePrompt(promptText, testCase);
 
-    // Map targets dynamically depending on key availability
-    const geminiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-    const isGeminiAvailable = geminiKey && !geminiKey.startsWith("your-") && !geminiKey.startsWith("dummy-");
+    const isLlamaSelected = (modelId || "").toLowerCase().includes("llama");
+    const targetModelsToRun = crossModel
+      ? [
+          { provider: "Meta", name: "llama-3.3-70b" },
+          { provider: "Google", name: "gemini-2.0-flash" },
+        ]
+      : [
+          {
+            provider: isLlamaSelected ? "Meta" : "Google",
+            name: isLlamaSelected ? "llama-3.3-70b" : "gemini-2.0-flash",
+          },
+        ];
 
-    const targetModel = isGeminiAvailable 
-      ? { provider: "Google", name: "gemini-2.0-flash" }
-      : { provider: "OpenAI", name: "gpt-4o-mini" };
-
-    // Call execution
-    const modelExecution = await callModel(
-      targetModel.provider,
-      targetModel.name,
-      compiledPrompt,
-      challenge.systemPrompt || undefined
+    // Call execution across requested target models in parallel
+    const executions = await Promise.all(
+      targetModelsToRun.map(async (m) => {
+        const res = await callModel(
+          m.provider,
+          m.name,
+          compiledPrompt,
+          challenge.systemPrompt || undefined
+        );
+        return {
+          ...m,
+          ...res,
+        };
+      })
     );
 
-    // Call judge
+    const primaryExecution = executions[0];
+
+    // Call judge on primary model output
     const judgeGrades = await callJudge(
       criteria.map((c) => ({
         name: c.name,
@@ -232,7 +280,7 @@ export async function POST(
         description: c.description,
       })),
       promptText,
-      modelExecution.text
+      primaryExecution.text
     );
 
     let totalScore = 0;
@@ -255,7 +303,7 @@ export async function POST(
 
     const isPassed = totalScore >= 70;
 
-    // Save
+    // Save submission and all model test results
     const submission = await prisma.$transaction(async (tx) => {
       const createdSubmission = await tx.submission.create({
         data: {
@@ -265,8 +313,8 @@ export async function POST(
           status: SubmissionStatus.COMPLETED,
           totalScore,
           passed: isPassed,
-          tokenCount: modelExecution.tokenCount,
-          executionTime: modelExecution.executionTimeMs,
+          tokenCount: primaryExecution.tokenCount,
+          executionTime: primaryExecution.executionTimeMs,
         },
       });
 
@@ -280,16 +328,16 @@ export async function POST(
         })),
       });
 
-      await tx.modelTestResult.create({
-        data: {
+      await tx.modelTestResult.createMany({
+        data: executions.map((exec) => ({
           submissionId: createdSubmission.id,
-          modelProvider: targetModel.provider,
-          modelName: targetModel.name,
-          rawOutput: modelExecution.text,
-          latencyMs: modelExecution.executionTimeMs,
+          modelProvider: exec.provider,
+          modelName: exec.name,
+          rawOutput: exec.text,
+          latencyMs: exec.executionTimeMs,
           score: totalScore,
           passed: isPassed,
-        },
+        })),
       });
 
       await tx.challenge.update({

@@ -9,7 +9,6 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [resetUrl, setResetUrl] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +21,6 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setError(null);
     setSuccess(null);
-    setResetUrl(null);
 
     try {
       const res = await fetch("/api/auth/forgot-password", {
@@ -38,9 +36,6 @@ export default function ForgotPasswordPage() {
       }
 
       setSuccess(data.message || "Password reset instructions have been generated.");
-      if (data.resetUrl) {
-        setResetUrl(data.resetUrl);
-      }
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
     } finally {
@@ -83,23 +78,12 @@ export default function ForgotPasswordPage() {
         )}
 
         {success && (
-          <div className="space-y-3">
-            <div className="flex items-start gap-2 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl">
+          <div className="space-y-4">
+            <div className="flex items-start gap-2 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 p-3.5 rounded-xl">
               <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400 mt-0.5" />
               <span>{success}</span>
             </div>
 
-            {resetUrl && (
-              <div className="p-3 bg-dark-900 border border-white/10 rounded-xl text-xs space-y-1">
-                <span className="font-semibold text-cyan-400 block">Dev Testing Link:</span>
-                <Link
-                  href={resetUrl}
-                  className="text-slate-300 hover:text-white underline break-all"
-                >
-                  Click here to Reset Password now →
-                </Link>
-              </div>
-            )}
           </div>
         )}
 

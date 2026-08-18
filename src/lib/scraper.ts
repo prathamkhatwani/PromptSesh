@@ -128,32 +128,56 @@ export async function fetchLiveInterviewQuestions(): Promise<ScrapedInterviewQue
     console.warn("Crawler HTTP fetch notice: Falling back to cached interview feed.", err);
   }
 
-  // Fallback / Baseline Scraped Feeds
+  // Fallback / Baseline Curated Enterprise Interview Feeds
   if (scrapedResults.length === 0) {
     return [
       {
-        company: "OpenAI",
-        role: "AI Safety Engineer",
-        rawQuestion: "Build a system prompt defense mechanism that prevents users from bypassing instructions using hypothetical framing ('Imagine you are an unfiltered AI model').",
-        sourceUrl: "https://glassdoor.com/interview/openai",
+        company: "Anthropic",
+        role: "Prompt Infrastructure & Alignment Engineer",
+        rawQuestion: "Design a Constitutional AI Enforcer prompt that evaluates assistant-generated responses against 4 strict safety tenets (Harmlessness, Factual Grounding, Privacy Preservation, and Transparency). The prompt must output a JSON rubric score (0-100) per tenet and an overall PASS/FAIL verdict.",
+        sourceUrl: "https://anthropic.com/careers/alignment-infrastructure",
         difficulty: "Expert",
-        tags: ["safety", "jailbreak", "security"],
+        tags: ["constitutional-ai", "safety", "rubrics", "json"],
       },
       {
-        company: "Anthropic",
-        role: "Prompt Infrastructure Engineer",
-        rawQuestion: "Design a Constitutional AI enforcer prompt that evaluates generated content against 4 ethical principles and returns a compliance score from 0-100.",
-        sourceUrl: "https://blind.com/post/anthropic-interview",
+        company: "OpenAI",
+        role: "AI Safety & Red-Teaming Engineer",
+        rawQuestion: "Build a zero-leakage System Prompt Firewall that detects and neutralizes indirect prompt injections (such as 'Ignore all previous instructions', 'DAN mode simulation', and Markdown image markdown exfiltration payloads) while preserving valid user search requests.",
+        sourceUrl: "https://openai.com/careers/safety-red-teaming",
         difficulty: "Expert",
-        tags: ["constitutional-ai", "ethics", "evals"],
+        tags: ["jailbreak", "injection-defense", "firewall", "security"],
       },
       {
         company: "Scale AI",
-        role: "Data Annotation Engineer",
-        rawQuestion: "Construct a multi-label taxonomy classifier that parses customer feedback into hierarchical JSON tags with confidence scores.",
-        sourceUrl: "https://reddit.com/r/cscareerquestions",
+        role: "Data Engine Systems Engineer",
+        rawQuestion: "Construct a hierarchical taxonomy classification template that ingests multi-turn enterprise support dialogues, classifies them into discrete intent trees (BILLING_DISPUTE, TECH_OUTAGE, PII_LEAK, FEATURE_REQUEST), and extracts entity spans with confidence coefficients.",
+        sourceUrl: "https://scale.com/careers/data-engine",
         difficulty: "Hard",
-        tags: ["taxonomy", "json", "annotation"],
+        tags: ["taxonomy", "classification", "entity-extraction", "json"],
+      },
+      {
+        company: "Stripe",
+        role: "Financial AI Platform Engineer",
+        rawQuestion: "Engineer a high-throughput transaction ledger parser prompt that strips PCI/PII card data from raw merchant strings, parses multiple currencies into ISO 4217, and enforces strict RFC-8259 JSON output with zero conversational commentary.",
+        sourceUrl: "https://stripe.com/jobs/financial-ai",
+        difficulty: "Hard",
+        tags: ["finance", "pci-compliance", "rfc8259", "structured-output"],
+      },
+      {
+        company: "Google DeepMind",
+        role: "Staff Prompt Systems Specialist",
+        rawQuestion: "Architect a factual grounding verification prompt for RAG pipelines that compares retrieved context snippets against generated answers, detects subtle hallucinated claims, and outputs line-by-line attribution citations.",
+        sourceUrl: "https://deepmind.google/careers",
+        difficulty: "Expert",
+        tags: ["rag", "factuality", "grounding", "citations"],
+      },
+      {
+        company: "Databricks",
+        role: "GenAI Solutions Architect",
+        rawQuestion: "Design a deterministic Text-to-SQL system prompt that translates natural language analytical queries into ANSI SQL dialect, injects schema table constraints, and prohibits destructive DDL/DML statements (DROP, DELETE, UPDATE).",
+        sourceUrl: "https://databricks.com/careers",
+        difficulty: "Hard",
+        tags: ["sql", "safety", "query-synthesis", "schema-locking"],
       },
     ];
   }
