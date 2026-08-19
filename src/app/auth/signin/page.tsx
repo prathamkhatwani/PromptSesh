@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Terminal, Sparkles, Loader2, Info } from "lucide-react";
+import { Terminal, Loader2, Info } from "lucide-react";
 
 function SignInForm() {
   const searchParams = useSearchParams();
@@ -59,21 +59,7 @@ function SignInForm() {
     try {
       await signIn("github", { callbackUrl });
     } catch (error) {
-      setNotice("Could not connect to GitHub. Logging in via Demo Account...");
-      await signIn("demo", { callbackUrl });
-    } finally {
-      setLoading(null);
-    }
-  };
-
-  const handleDemoSignIn = async () => {
-    setLoading("demo");
-    setError(null);
-    setNotice(null);
-    try {
-      await signIn("demo", { callbackUrl });
-    } catch (error) {
-      setNotice("Demo login failed. Please try again.");
+      setError("Could not connect to GitHub OAuth. Please try again or sign in with your email.");
     } finally {
       setLoading(null);
     }
@@ -188,22 +174,8 @@ function SignInForm() {
         </div>
       </div>
 
-      {/* Social & Fast Auth Buttons */}
-      <div className="space-y-2.5">
-        <button
-          type="button"
-          onClick={handleDemoSignIn}
-          disabled={loading !== null}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] px-4 py-2.5 text-xs font-semibold text-white transition-all cursor-pointer disabled:opacity-50"
-        >
-          {loading === "demo" ? (
-            <Loader2 className="h-4 w-4 animate-spin text-cyan-400" />
-          ) : (
-            <Sparkles className="h-4 w-4 text-purple-400" />
-          )}
-          Quick Demo 1-Click Login
-        </button>
-
+      {/* Social Auth Button */}
+      <div>
         <button
           type="button"
           onClick={handleGitHubSignIn}

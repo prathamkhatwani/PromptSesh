@@ -168,20 +168,6 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized — sign in required" }, { status: 401 });
     }
 
-    // Ensure demo user exists in DB if logging in via demo provider
-    const userRole = (session?.user as any)?.role;
-    if (userRole === "DEMO") {
-      await prisma.user.upsert({
-        where: { id: userId },
-        update: {},
-        create: {
-          id: userId,
-          name: session?.user?.name || "Demo User",
-          email: session?.user?.email || "demo@promptsesh.com",
-        },
-      });
-    }
-
     const finalUserId = userId;
 
     // Fetch challenge & criteria

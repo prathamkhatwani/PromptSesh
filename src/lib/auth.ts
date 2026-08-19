@@ -79,39 +79,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        // Demo fallback default account
-        if (email === "engineer@promptsesh.com" && (password === "prompt123" || password === "password")) {
-          return {
-            id: "usr_demo_101",
-            name: "Alex Rivera",
-            email: "engineer@promptsesh.com",
-            image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
-            role: "USER",
-          } as any;
-        }
-
         return null;
-      },
-    }),
-    Credentials({
-      id: "demo",
-      name: "Demo Engineer",
-      credentials: {
-        email: { label: "Email", type: "email" },
-      },
-      async authorize() {
-        // Demo login is disabled in production to prevent unauthenticated access
-        if (process.env.NODE_ENV === "production") {
-          return null;
-        }
-        // Always return the fixed demo identity — ignore any user-supplied email
-        return {
-          id: "usr_demo_101",
-          name: "Alex Rivera (Demo)",
-          email: "engineer@promptsesh.com",
-          image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
-          role: "DEMO",
-        } as any;
       },
     }),
   ],
