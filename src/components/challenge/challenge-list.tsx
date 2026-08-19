@@ -4,10 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
   Search,
-  CheckCircle2,
-  Lock,
   ArrowUpDown,
-  ChevronRight,
 } from "lucide-react";
 import { getDifficultyBg, formatNumber } from "@/lib/utils";
 
@@ -51,7 +48,6 @@ export function ChallengeList({
   const [search, setSearch] = useState("");
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("All");
   
-  // Find matching category name from slug if passed
   const matchingCat = initialCategoryFilter
     ? initialCategories.find((c) => c.slug === initialCategoryFilter || c.name.toLowerCase() === initialCategoryFilter.toLowerCase())
     : null;
@@ -123,152 +119,122 @@ export function ChallengeList({
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+    <div className="min-h-screen bg-[#000000] text-white font-mono">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
         {/* Header */}
-        <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-[#27272a]">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold mb-3">
-              <span>⚡</span>
-              <span>100 Interactive Prompt Engineering Labs</span>
+            <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">
+              // INDEX_REPOSITORY: {initialChallenges.length} LABORATORY MODULES
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-2">
-              Explore Challenges
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight uppercase">
+              Assessment Catalogue
             </h1>
-            <p className="text-slate-400 text-sm sm:text-base max-w-2xl">
-              Solve real-world prompt engineering scenarios, test across multiple LLMs, and receive instant criteria-level rubric scores from automated AI judges.
+            <p className="text-zinc-400 text-xs sm:text-sm max-w-2xl mt-1 font-sans">
+              Deterministic prompt engineering specifications evaluated against dual foundation models with criterion-level rubric scorecards.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar py-1">
-            <div className="bg-dark-900 border border-white/[0.06] rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 text-center shrink-0 min-w-[75px] sm:min-w-[90px]">
-              <div className="text-lg sm:text-xl font-extrabold text-cyan-400 font-mono">{initialChallenges.length}</div>
-              <div className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Total Labs</div>
+          <div className="flex items-center gap-2">
+            <div className="border border-[#27272a] bg-[#0a0a0a] px-3.5 py-1.5 text-center">
+              <div className="text-sm font-black text-white">{initialChallenges.length}</div>
+              <div className="text-[9px] text-zinc-500 uppercase tracking-widest">LABS</div>
             </div>
-            <div className="bg-dark-900 border border-white/[0.06] rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 text-center shrink-0 min-w-[75px] sm:min-w-[90px]">
-              <div className="text-lg sm:text-xl font-extrabold text-purple-400 font-mono">{initialCategories.length}</div>
-              <div className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Categories</div>
+            <div className="border border-[#27272a] bg-[#0a0a0a] px-3.5 py-1.5 text-center">
+              <div className="text-sm font-black text-white">{initialCategories.length}</div>
+              <div className="text-[9px] text-zinc-500 uppercase tracking-widest">TRACKS</div>
             </div>
-            <div className="bg-dark-900 border border-white/[0.06] rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 text-center shrink-0 min-w-[75px] sm:min-w-[90px]">
-              <div className="text-lg sm:text-xl font-extrabold text-emerald-400 font-mono">4</div>
-              <div className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Tiers</div>
+            <div className="border border-[#27272a] bg-[#0a0a0a] px-3.5 py-1.5 text-center">
+              <div className="text-sm font-black text-white">2</div>
+              <div className="text-[9px] text-zinc-500 uppercase tracking-widest">MODELS</div>
             </div>
           </div>
         </div>
 
-        {/* Filters & Categories Toolbar */}
-        <div className="glass-card p-4 sm:p-5 mb-8 space-y-4">
-          {/* Top Control Bar: Search & Difficulty */}
-          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+        {/* Toolbar & Filter Bar */}
+        <div className="border border-[#27272a] bg-[#0a0a0a] p-4 mb-6 space-y-3">
+          {/* Search & Difficulty */}
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
             {/* Search Input */}
             <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 font-bold text-xs">&gt;</span>
               <input
                 type="text"
-                placeholder="Search by keyword, domain, or tag (e.g. 'Fintech', 'JSON', 'Security')..."
+                placeholder="FILTER_SPECIFICATIONS (e.g. 'JSON', 'SECURITY')..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-xl border border-white/[0.08] bg-dark-900/80 py-2.5 pl-10 pr-10 text-sm text-slate-200 placeholder:text-slate-500 focus:border-cyan-500/50 focus:bg-dark-900 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all shadow-inner"
+                className="w-full border border-[#27272a] bg-black py-2 pl-8 pr-8 text-xs text-white placeholder:text-zinc-600 focus:border-white focus:outline-none transition-all uppercase"
               />
               {search && (
                 <button
                   onClick={() => setSearch("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1 text-xs"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white text-xs font-bold"
                 >
-                  ✕
+                  [CLEAR]
                 </button>
               )}
             </div>
 
-            {/* Difficulty Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mr-1 hidden sm:inline">
-                Difficulty:
-              </span>
+            {/* Difficulty Tabs */}
+            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
               {difficulties.map((diff) => {
                 const isActive = selectedDifficulty === diff;
-                const colorClasses =
-                  diff === "All"
-                    ? isActive
-                      ? "bg-white/10 text-white border-white/20 shadow-sm"
-                      : "text-slate-400 border-transparent hover:text-slate-200 hover:bg-white/[0.03]"
-                    : isActive
-                    ? getDifficultyBg(diff) + " border shadow-sm"
-                    : "text-slate-400 border-transparent hover:text-slate-200 hover:bg-white/[0.03]";
                 return (
                   <button
                     key={diff}
                     onClick={() => setSelectedDifficulty(diff)}
-                    className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all shrink-0 cursor-pointer ${colorClasses}`}
+                    className={`border px-3 py-1 text-xs font-bold uppercase transition-all shrink-0 cursor-pointer ${
+                      isActive
+                        ? "border-white bg-white text-black"
+                        : "border-[#27272a] bg-black text-zinc-400 hover:text-white hover:border-zinc-600"
+                    }`}
                   >
-                    {diff === "All" ? "All Tiers" : diff.charAt(0) + diff.slice(1).toLowerCase()}
+                    [{diff}]
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* Category Tabs Strip (No Scrollbar, Sleek Design) */}
-          <div className="pt-3 border-t border-white/[0.06]">
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 scroll-smooth">
+          {/* Categories Strip */}
+          <div className="pt-2.5 border-t border-[#27272a]">
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
               <button
                 onClick={() => setSelectedCategory("All")}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-medium shrink-0 transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`px-2.5 py-1 text-xs font-bold uppercase shrink-0 transition-all border cursor-pointer ${
                   selectedCategory === "All"
-                    ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold shadow-md shadow-cyan-500/20"
-                    : "bg-white/[0.03] text-slate-400 hover:text-white hover:bg-white/[0.06] border border-white/[0.05]"
+                    ? "border-white bg-white text-black"
+                    : "border-[#27272a] bg-black text-zinc-400 hover:text-white"
                 }`}
               >
-                <span>All Categories</span>
-                <span className="text-[10px] opacity-75 bg-black/20 px-1.5 py-0.5 rounded-full font-mono">
-                  {initialChallenges.length}
-                </span>
+                00. ALL_DOMAINS ({initialChallenges.length})
               </button>
 
-              {initialCategories.map((cat) => {
+              {initialCategories.map((cat, idx) => {
                 const isActive = selectedCategory === cat.slug;
                 const count = initialChallenges.filter(c => c.categorySlug === cat.slug).length;
                 return (
                   <button
                     key={cat.slug}
                     onClick={() => setSelectedCategory(cat.slug)}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-medium shrink-0 transition-all flex items-center gap-1.5 cursor-pointer ${
+                    className={`px-2.5 py-1 text-xs font-bold uppercase shrink-0 transition-all border cursor-pointer ${
                       isActive
-                        ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold shadow-md shadow-cyan-500/20"
-                        : "bg-white/[0.03] text-slate-400 hover:text-white hover:bg-white/[0.06] border border-white/[0.05]"
+                        ? "border-white bg-white text-black"
+                        : "border-[#27272a] bg-black text-zinc-400 hover:text-white"
                     }`}
                   >
-                    <span>{cat.name}</span>
-                    {count > 0 && (
-                      <span className="text-[10px] opacity-75 bg-black/20 px-1.5 py-0.5 rounded-full font-mono">
-                        {count}
-                      </span>
-                    )}
+                    {String(idx + 1).padStart(2, "0")}. {cat.name} ({count})
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* Results Summary Bar & Active Filters */}
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400 pt-2 border-t border-white/[0.04]">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-mono">
-                Showing <strong className="text-white">{filteredChallenges.length}</strong> of {initialChallenges.length} challenges
-              </span>
-              {selectedCategory !== "All" && (
-                <span className="inline-flex items-center gap-1 bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 rounded-md px-2 py-0.5 text-[11px]">
-                  Category: {initialCategories.find(c => c.slug === selectedCategory)?.name || selectedCategory}
-                  <button onClick={() => setSelectedCategory("All")} className="hover:text-white ml-0.5">✕</button>
-                </span>
-              )}
-              {selectedDifficulty !== "All" && (
-                <span className="inline-flex items-center gap-1 bg-blue-500/10 text-blue-300 border border-blue-500/20 rounded-md px-2 py-0.5 text-[11px]">
-                  Difficulty: {selectedDifficulty}
-                  <button onClick={() => setSelectedDifficulty("All")} className="hover:text-white ml-0.5">✕</button>
-                </span>
-              )}
-            </div>
+          {/* Results Summary */}
+          <div className="flex items-center justify-between text-xs text-zinc-500 pt-2 border-t border-[#27272a]">
+            <span>
+              STATUS: <strong className="text-white">{filteredChallenges.length}</strong> matching specifications found
+            </span>
 
             {(search || selectedDifficulty !== "All" || selectedCategory !== "All") && (
               <button
@@ -277,159 +243,109 @@ export function ChallengeList({
                   setSelectedDifficulty("All");
                   setSelectedCategory("All");
                 }}
-                className="text-cyan-400 hover:text-cyan-300 transition-colors font-medium text-xs underline underline-offset-4 cursor-pointer"
+                className="text-white hover:underline cursor-pointer font-bold"
               >
-                Clear all filters
+                [RESET_FILTERS]
               </button>
             )}
           </div>
         </div>
 
         {/* Challenges Table */}
-        <div className="glass-card overflow-hidden">
+        <div className="border border-[#27272a] bg-[#0a0a0a] overflow-hidden">
           {/* Table Header */}
-          <div className="hidden sm:grid grid-cols-[44px_1fr_120px_200px_120px_120px] items-center gap-4 px-6 py-3 border-b border-white/[0.06] text-xs font-medium text-slate-500 uppercase tracking-wider">
-            <div>Status</div>
+          <div className="hidden sm:grid grid-cols-[50px_1fr_120px_180px_120px_120px] items-center gap-3 px-5 py-2.5 border-b border-[#27272a] text-xs font-bold text-zinc-400 uppercase tracking-wider bg-black">
+            <div>STAT</div>
             <button
               onClick={() => handleSort("title")}
-              className="flex items-center gap-1 hover:text-slate-300 transition-colors text-left cursor-pointer"
+              className="flex items-center gap-1 hover:text-white text-left cursor-pointer"
             >
-              Title
+              SPECIFICATION_TITLE
               <ArrowUpDown className="h-3 w-3" />
             </button>
             <button
               onClick={() => handleSort("difficulty")}
-              className="flex items-center gap-1 hover:text-slate-300 transition-colors cursor-pointer"
+              className="flex items-center gap-1 hover:text-white cursor-pointer"
             >
-              Difficulty
+              TIER
               <ArrowUpDown className="h-3 w-3" />
             </button>
-            <div>Category</div>
+            <div>DOMAIN</div>
             <button
               onClick={() => handleSort("acceptanceRate")}
-              className="flex items-center gap-1 hover:text-slate-300 transition-colors cursor-pointer"
+              className="flex items-center gap-1 hover:text-white cursor-pointer"
             >
-              Acceptance
+              PASS_RATE
               <ArrowUpDown className="h-3 w-3" />
             </button>
             <button
               onClick={() => handleSort("totalSubmissions")}
-              className="flex items-center gap-1 hover:text-slate-300 transition-colors cursor-pointer"
+              className="flex items-center gap-1 hover:text-white cursor-pointer"
             >
-              Submissions
+              RUNS
               <ArrowUpDown className="h-3 w-3" />
             </button>
           </div>
 
           {/* Table Rows */}
           {filteredChallenges.length === 0 ? (
-            <div className="text-center py-16 text-slate-500">
-              No challenges found matching your filters.
+            <div className="text-center py-12 text-zinc-500 text-xs font-bold">
+              NO SPECIFICATIONS LOCATED MATCHING CRITERIA.
             </div>
           ) : (
             filteredChallenges.map((challenge, idx) => (
               <Link
                 key={challenge.id}
                 href={`/challenges/${challenge.slug}`}
-                className={`group block sm:grid sm:grid-cols-[44px_1fr_120px_200px_120px_120px] sm:items-center sm:gap-4 p-4 sm:px-6 sm:py-4 border-b border-white/[0.05] transition-all duration-200 hover:bg-white/[0.04] hover:border-cyan-500/30 ${
-                  idx % 2 === 0 ? "bg-transparent" : "bg-white/[0.01]"
+                className={`group block sm:grid sm:grid-cols-[50px_1fr_120px_180px_120px_120px] sm:items-center sm:gap-3 p-3.5 sm:px-5 sm:py-3 border-b border-[#27272a]/60 transition-all hover:bg-[#141414] ${
+                  idx % 2 === 0 ? "bg-[#0a0a0a]" : "bg-black"
                 }`}
               >
-                {/* ── MOBILE VIEW CARD (Visible on < sm) ──────────── */}
-                <div className="sm:hidden space-y-3">
-                  {/* Top row: Category tag & Difficulty badge */}
+                {/* Mobile View */}
+                <div className="sm:hidden space-y-1.5">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-semibold text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 rounded-md px-2.5 py-0.5 truncate max-w-[200px]">
+                    <span className="text-[10px] text-zinc-400 border border-zinc-800 px-1.5 py-0.2">
                       {challenge.category}
                     </span>
-                    <span
-                      className={`inline-flex rounded-md border px-2 py-0.5 text-[11px] font-semibold shrink-0 ${getDifficultyBg(
-                        challenge.difficulty
-                      )}`}
-                    >
-                      {challenge.difficulty}
+                    <span className={`text-[10px] px-1.5 py-0.2 border ${getDifficultyBg(challenge.difficulty)}`}>
+                      [{challenge.difficulty.toUpperCase()}]
                     </span>
                   </div>
-
-                  {/* Middle row: Status icon + Challenge Title + Arrow */}
-                  <div className="flex items-start justify-between gap-2.5">
-                    <div className="flex items-start gap-2.5 flex-1 min-w-0">
-                      {challenge.isCompleted ? (
-                        <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-                      ) : challenge.isPremium ? (
-                        <Lock className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-                      ) : (
-                        <div className="h-2.5 w-2.5 rounded-full bg-cyan-400 shrink-0 mt-1.5 ring-4 ring-cyan-500/10" />
-                      )}
-                      <h3 className="text-sm font-semibold text-slate-100 group-hover:text-cyan-300 transition-colors leading-snug">
-                        {challenge.title}
-                      </h3>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-cyan-400 group-hover:translate-x-0.5 transition-all shrink-0 mt-0.5" />
+                  <div className="text-xs font-bold text-white group-hover:underline uppercase">
+                    {challenge.title}
                   </div>
-
-                  {/* Bottom metrics row */}
-                  <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-white/[0.04]">
-                    <div className="flex items-center gap-1.5 font-mono text-[11px]">
-                      <span className="text-slate-500">Acceptance:</span>
-                      <span className="text-slate-300 font-semibold">
-                        {challenge.totalSubmissions > 0 ? `${challenge.acceptanceRate}%` : "New Lab"}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 font-mono text-[11px]">
-                      <span className="text-slate-500">Submissions:</span>
-                      <span className="text-slate-300 font-semibold">
-                        {challenge.totalSubmissions > 0 ? formatNumber(challenge.totalSubmissions) : "0"}
-                      </span>
-                    </div>
+                  <div className="flex items-center justify-between text-xs text-zinc-500">
+                    <span>{challenge.acceptanceRate}% pass</span>
+                    <span>{formatNumber(challenge.totalSubmissions)} runs</span>
                   </div>
                 </div>
 
-                {/* ── DESKTOP VIEW TABLE (Visible on >= sm) ───────── */}
-                {/* Status */}
-                <div className="hidden sm:block">
+                {/* Desktop View */}
+                <div className="hidden sm:block font-mono text-xs">
                   {challenge.isCompleted ? (
-                    <CheckCircle2 className="h-4.5 w-4.5 text-emerald-400" />
-                  ) : challenge.isPremium ? (
-                    <Lock className="h-4 w-4 text-amber-500" />
+                    <span className="text-white font-black">[OK]</span>
                   ) : (
-                    <div className="h-4 w-4 rounded-full border border-white/[0.1]" />
+                    <span className="text-zinc-600">[--]</span>
                   )}
                 </div>
-
-                {/* Title */}
-                <div className="hidden sm:block">
-                  <span className="text-sm font-medium text-slate-200 group-hover:text-white">
+                <div className="hidden sm:block min-w-0">
+                  <span className="text-xs font-bold text-white group-hover:underline uppercase truncate block">
                     {challenge.title}
                   </span>
                 </div>
-
-                {/* Difficulty */}
                 <div className="hidden sm:block">
-                  <span
-                    className={`inline-flex rounded-md border px-2.5 py-0.5 text-xs font-medium ${getDifficultyBg(
-                      challenge.difficulty
-                    )}`}
-                  >
-                    {challenge.difficulty}
+                  <span className={`text-[10px] px-2 py-0.5 border ${getDifficultyBg(challenge.difficulty)}`}>
+                    [{challenge.difficulty.toUpperCase()}]
                   </span>
                 </div>
-
-                {/* Category */}
-                <div className="hidden sm:block">
-                  <span className="text-xs text-slate-400 bg-white/[0.04] rounded-md px-2 py-1">
-                    {challenge.category}
-                  </span>
+                <div className="hidden sm:block text-xs text-zinc-400 truncate uppercase">
+                  {challenge.category}
                 </div>
-
-                {/* Acceptance Rate */}
-                <div className="hidden sm:block text-sm text-slate-400">
-                  {challenge.totalSubmissions > 0 ? `${challenge.acceptanceRate}%` : "New"}
+                <div className="hidden sm:block text-xs font-bold text-white">
+                  {challenge.acceptanceRate}%
                 </div>
-
-                {/* Submissions */}
-                <div className="hidden sm:block text-sm text-slate-400 font-mono">
-                  {challenge.totalSubmissions > 0 ? formatNumber(challenge.totalSubmissions) : "0"}
+                <div className="hidden sm:block text-xs text-zinc-500">
+                  {formatNumber(challenge.totalSubmissions)}
                 </div>
               </Link>
             ))

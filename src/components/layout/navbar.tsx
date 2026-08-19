@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { Terminal, Menu, X, ChevronRight, LogOut, User } from "lucide-react";
+import { Menu, X, LogOut, User } from "lucide-react";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -15,37 +15,41 @@ export function Navbar() {
   const user = session?.user;
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-white/[0.06] bg-dark-950/80 backdrop-blur-xl">
+    <nav className="sticky top-0 z-50 border-b border-[#27272a] bg-[#000000] select-none">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-purple-600 shadow-lg shadow-cyan-500/20 transition-all group-hover:shadow-cyan-500/40 group-hover:scale-105">
-              <Terminal className="h-4 w-4 text-white" />
+        <div className="flex h-14 items-center justify-between">
+          {/* Brand */}
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="flex h-6 w-6 items-center justify-center bg-white text-black font-black text-xs">
+              ■
             </div>
-            <span className="text-lg font-bold tracking-tight">
-              <span className="gradient-text">Prompt</span>
-              <span className="text-white">Sesh</span>
-            </span>
+            <div className="flex items-baseline gap-1.5 font-mono">
+              <span className="text-sm font-black tracking-tight text-white uppercase">
+                PROMPTSESH
+              </span>
+              <span className="text-[10px] text-zinc-500 font-bold uppercase">
+                // SYSTEM_01
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-1.5">
+          <div className="hidden md:flex items-center gap-1 font-mono">
             {[
-              { href: "/challenges", label: "Challenges" },
-              { href: "/interview-simulator", label: "Interview" },
-              { href: "/leaderboard", label: "Leaderboard" },
-              { href: "/profile", label: "Profile" },
+              { href: "/challenges", label: "[01] CHALLENGES" },
+              { href: "/interview-simulator", label: "[02] INTERVIEWS" },
+              { href: "/leaderboard", label: "[03] LEADERBOARD" },
+              { href: "/profile", label: "[04] PROFILE" },
             ].map((link) => {
               const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+                  className={`px-3 py-1 text-xs font-bold transition-all border ${
                     isActive
-                      ? "text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 shadow-sm shadow-cyan-500/10 font-semibold"
-                      : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
+                      ? "text-black bg-white border-white"
+                      : "text-zinc-400 border-transparent hover:text-white hover:border-[#3f3f46]"
                   }`}
                 >
                   {link.label}
@@ -54,50 +58,52 @@ export function Navbar() {
             })}
           </div>
 
-          {/* Auth Buttons */}
-          <div className="hidden md:flex items-center gap-3">
+          {/* Auth Controls */}
+          <div className="hidden md:flex items-center gap-2 font-mono">
             {loading ? (
-              <div className="h-8 w-20 bg-white/5 animate-pulse rounded-lg" />
+              <div className="h-7 w-20 bg-zinc-900 border border-zinc-800 animate-pulse" />
             ) : user ? (
-              <div className="flex items-center gap-4">
-                <Link href="/profile" className="flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white transition-colors">
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-2 text-xs font-bold text-zinc-200 hover:text-white transition-colors border border-zinc-800 px-2.5 py-1 bg-black hover:border-white"
+                >
                   {user.image ? (
                     <img
                       src={user.image}
                       alt={user.name || "User"}
-                      className="h-7 w-7 rounded-full border border-white/10"
+                      className="h-4 w-4 border border-zinc-700"
                     />
                   ) : (
-                    <div className="h-7 w-7 rounded-full bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center">
-                      <User className="h-3.5 w-3.5 text-cyan-400" />
+                    <div className="h-4 w-4 bg-white text-black font-bold flex items-center justify-center text-[10px]">
+                      {user.name?.charAt(0) || "U"}
                     </div>
                   )}
-                  <span className="hidden sm:inline max-w-[120px] truncate">
+                  <span className="hidden sm:inline max-w-[110px] truncate text-[11px]">
                     {user.name || user.email}
                   </span>
                 </Link>
                 <button
                   onClick={() => signOut()}
-                  className="p-2 text-slate-400 hover:text-white hover:bg-white/[0.04] rounded-lg transition-all cursor-pointer"
+                  className="p-1 text-zinc-400 hover:text-white border border-zinc-800 hover:border-white transition-colors cursor-pointer"
                   title="Sign Out"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-3.5 w-3.5" />
                 </button>
               </div>
             ) : (
               <>
                 <Link
                   href="/auth/signin"
-                  className="px-4 py-2 text-sm font-medium text-slate-300 rounded-lg transition-all hover:text-white hover:bg-white/[0.04]"
+                  className="px-3 py-1 text-xs font-bold text-zinc-300 hover:text-white border border-zinc-800 hover:border-white transition-colors"
                 >
-                  Sign In
+                  [LOGIN]
                 </Link>
                 <Link
                   href="/auth/signup"
-                  className="group relative inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-500/25 transition-all hover:shadow-cyan-500/40 hover:brightness-110"
+                  className="inline-flex items-center gap-1 bg-white hover:bg-zinc-200 text-black border border-white px-3.5 py-1 text-xs font-black uppercase transition-all"
                 >
-                  Get Started
-                  <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                  START &rarr;
                 </Link>
               </>
             )}
@@ -105,37 +111,32 @@ export function Navbar() {
 
           {/* Mobile Menu Toggle */}
           <button
-            className="md:hidden p-2 text-slate-400 hover:text-white transition-colors cursor-pointer"
+            className="md:hidden p-1 text-zinc-400 hover:text-white border border-zinc-800 transition-colors cursor-pointer"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle Menu"
-            aria-expanded={mobileMenuOpen}
           >
-            {mobileMenuOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
+            {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </button>
         </div>
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-white/[0.06] py-4 space-y-1">
+          <div className="md:hidden border-t border-zinc-800 py-3 space-y-1 bg-black font-mono">
             {[
-              { href: "/challenges", label: "Challenges" },
-              { href: "/interview-simulator", label: "Interview" },
-              { href: "/leaderboard", label: "Leaderboard" },
-              { href: "/profile", label: "Profile" },
+              { href: "/challenges", label: "[01] CHALLENGES" },
+              { href: "/interview-simulator", label: "[02] INTERVIEWS" },
+              { href: "/leaderboard", label: "[03] LEADERBOARD" },
+              { href: "/profile", label: "[04] PROFILE" },
             ].map((link) => {
               const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-all ${
+                  className={`block px-3 py-2 text-xs font-bold border ${
                     isActive
-                      ? "text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 font-semibold"
-                      : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
+                      ? "text-black bg-white border-white"
+                      : "text-zinc-400 border-transparent hover:text-white"
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -143,51 +144,38 @@ export function Navbar() {
                 </Link>
               );
             })}
-            <div className="pt-3 border-t border-white/[0.06] space-y-2 px-4">
+            <div className="pt-2 border-t border-zinc-800 space-y-2 px-3">
               {loading ? (
-                <div className="h-10 w-full bg-white/5 animate-pulse rounded-lg" />
+                <div className="h-8 w-full bg-zinc-900 border border-zinc-800 animate-pulse" />
               ) : user ? (
-                <div className="flex items-center justify-between py-2 border-b border-white/[0.04] mb-2">
-                  <div className="flex items-center gap-2.5">
-                    {user.image ? (
-                      <img
-                        src={user.image}
-                        alt={user.name || "User"}
-                        className="h-8 w-8 rounded-full border border-white/10"
-                      />
-                    ) : (
-                      <div className="h-8 w-8 rounded-full bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center">
-                        <User className="h-4 w-4 text-cyan-400" />
-                      </div>
-                    )}
-                    <span className="text-sm font-medium text-slate-200">
-                      {user.name || user.email}
-                    </span>
-                  </div>
+                <div className="flex items-center justify-between py-2 border-b border-zinc-800">
+                  <span className="text-xs font-bold text-white truncate">
+                    USER: {user.name || user.email}
+                  </span>
                   <button
                     onClick={() => signOut()}
-                    className="p-2 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+                    className="p-1 text-zinc-400 hover:text-white"
                   >
-                    <LogOut className="h-4.5 w-4.5" />
+                    <LogOut className="h-4 w-4" />
                   </button>
                 </div>
               ) : (
-                <>
+                <div className="grid grid-cols-2 gap-2 pt-1">
                   <Link
                     href="/auth/signin"
-                    className="block text-center py-2.5 text-sm font-medium text-slate-300 rounded-lg border border-white/[0.08] hover:bg-white/[0.04] transition-colors"
+                    className="text-center py-2 text-xs font-bold text-white border border-zinc-800 hover:border-white"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Sign In
+                    [LOGIN]
                   </Link>
                   <Link
                     href="/auth/signup"
-                    className="block text-center py-2.5 text-sm font-semibold text-white rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:brightness-110 transition-all shadow-md"
+                    className="text-center py-2 text-xs font-black text-black bg-white hover:bg-zinc-200"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Get Started
+                    START &rarr;
                   </Link>
-                </>
+                </div>
               )}
             </div>
           </div>

@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Terminal, Loader2, Info, CheckCircle2 } from "lucide-react";
+import { Loader2, Info, CheckCircle2 } from "lucide-react";
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -24,8 +24,8 @@ function ResetPasswordForm() {
       return;
     }
 
-    if (!newPassword || newPassword.length < 6) {
-      setError("Password must be at least 6 characters long.");
+    if (!newPassword || newPassword.length < 8) {
+      setError("Password must be at least 8 characters long.");
       return;
     }
 
@@ -62,91 +62,90 @@ function ResetPasswordForm() {
   };
 
   return (
-    <div className="relative w-full max-w-md space-y-6 glass-card p-8 sm:p-10 shadow-2xl">
+    <div className="relative w-full max-w-md space-y-5 border border-[#27272a] bg-[#0a0a0a] p-6 sm:p-8 font-mono text-white">
       {/* Header */}
-      <div className="text-center">
-        <Link href="/" className="inline-flex items-center gap-2.5 mb-4 group">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-purple-600 shadow-lg shadow-cyan-500/20">
-            <Terminal className="h-5 w-5 text-white" />
+      <div className="text-center pb-4 border-b border-[#27272a]">
+        <Link href="/" className="inline-flex items-center gap-2 mb-2 group">
+          <div className="flex h-6 w-6 items-center justify-center bg-white text-black font-black text-xs">
+            ■
           </div>
-          <span className="text-xl font-bold tracking-tight">
-            <span className="gradient-text">Prompt</span>
-            <span className="text-white">Sesh</span>
+          <span className="text-sm font-black tracking-tight text-white uppercase">
+            PROMPTSESH
           </span>
         </Link>
-        <h2 className="text-2xl font-extrabold tracking-tight text-white mb-1">
-          Reset Password
+        <h2 className="text-lg font-black text-white uppercase">
+          CONFIGURE NEW PASSWORD
         </h2>
-        <p className="text-xs text-slate-400">
-          Set a new password for your PromptSesh account
+        <p className="text-xs text-zinc-400 font-sans mt-0.5">
+          Commit updated credentials to your practitioner account
         </p>
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 p-3 rounded-xl">
-          <Info className="h-4 w-4 shrink-0 text-rose-400" />
+        <div className="flex items-center gap-2 text-xs text-[#ef4444] bg-[#ef4444]/10 border border-[#ef4444]/30 p-3">
+          <Info className="h-4 w-4 shrink-0 text-[#ef4444]" />
           <span>{error}</span>
         </div>
       )}
 
       {success ? (
-        <div className="text-center p-6 space-y-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-          <CheckCircle2 className="h-8 w-8 text-emerald-400 mx-auto" />
-          <h3 className="text-sm font-bold text-white">Password Successfully Reset!</h3>
-          <p className="text-xs text-slate-300">
-            Redirecting to sign in page...
+        <div className="text-center p-6 space-y-2 bg-black border border-white">
+          <CheckCircle2 className="h-7 w-7 text-white mx-auto" />
+          <h3 className="text-xs font-black text-white uppercase tracking-wider">CREDENTIALS COMMITTED SUCCESSFULLY</h3>
+          <p className="text-xs text-zinc-400 font-sans">
+            Redirecting to sign-in page in 2 seconds...
           </p>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3.5">
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              New Password
+            <label className="block text-xs font-bold text-zinc-300 uppercase mb-1.5">
+              NEW_PASSWORD (MIN 8 CHARACTERS)
             </label>
             <input
               type="password"
               required
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="At least 6 characters"
-              className="w-full rounded-xl border border-white/[0.08] bg-dark-900/60 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+              placeholder="••••••••••••"
+              className="w-full border border-[#27272a] bg-black px-3.5 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-white focus:outline-none transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Confirm New Password
+            <label className="block text-xs font-bold text-zinc-300 uppercase mb-1.5">
+              CONFIRM_NEW_PASSWORD
             </label>
             <input
               type="password"
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Re-enter new password"
-              className="w-full rounded-xl border border-white/[0.08] bg-dark-900/60 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+              placeholder="••••••••••••"
+              className="w-full border border-[#27272a] bg-black px-3.5 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-white focus:outline-none transition-all"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 px-5 py-2.5 text-xs font-semibold text-white transition-all shadow-lg shadow-cyan-500/20 cursor-pointer disabled:opacity-50"
+            className="w-full inline-flex items-center justify-center gap-2 bg-white hover:bg-zinc-200 text-black border border-white px-4 py-2.5 text-xs font-black uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50"
           >
             {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin text-white" />
+              <Loader2 className="h-4 w-4 animate-spin text-black" />
             ) : (
-              "Save New Password"
+              "COMMIT UPDATE &rarr;"
             )}
           </button>
         </form>
       )}
 
-      <div className="text-center text-xs text-slate-400 pt-4 border-t border-white/[0.06]">
+      <div className="text-center text-xs text-zinc-400 pt-3 border-t border-[#27272a]">
         <Link
           href="/auth/signin"
-          className="font-bold text-cyan-400 hover:text-cyan-300 transition-colors"
+          className="font-bold text-white hover:underline uppercase"
         >
-          Back to Sign In
+          [RETURN_TO_SIGN_IN]
         </Link>
       </div>
     </div>
@@ -155,13 +154,8 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="relative min-h-[calc(100vh-64px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 overflow-hidden bg-dark-950">
-      {/* Background effects */}
-      <div className="absolute inset-0 grid-bg opacity-40" />
-      <div className="absolute top-1/3 left-1/3 w-80 h-80 bg-cyan-500/5 rounded-full blur-[100px]" />
-      <div className="absolute bottom-1/3 right-1/3 w-80 h-80 bg-purple-500/5 rounded-full blur-[100px]" />
-
-      <Suspense fallback={<div className="text-slate-400 text-xs">Loading...</div>}>
+    <div className="relative min-h-[calc(100vh-56px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-[#000000] grid-bg font-mono">
+      <Suspense fallback={<div className="text-zinc-500 text-xs font-mono">// INITIALIZING_SESSION...</div>}>
         <ResetPasswordForm />
       </Suspense>
     </div>

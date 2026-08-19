@@ -4,7 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Terminal, Loader2, Info, CheckCircle2 } from "lucide-react";
+import { Loader2, Info } from "lucide-react";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -23,13 +23,13 @@ export default function SignUpPage() {
       return;
     }
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters long.");
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long.");
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match. Please verify your password.");
+      setError("Passwords do not match. Please verify.");
       return;
     }
 
@@ -49,7 +49,6 @@ export default function SignUpPage() {
         throw new Error(data.error || "Failed to create account.");
       }
 
-      // Automatically sign in the user after creating their account!
       const signInResult = await signIn("credentials", {
         email,
         password,
@@ -70,119 +69,111 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="relative min-h-[calc(100vh-64px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 overflow-hidden bg-dark-950">
-      {/* Background effects */}
-      <div className="absolute inset-0 grid-bg opacity-40" />
-      <div className="absolute top-1/3 left-1/3 w-80 h-80 bg-cyan-500/5 rounded-full blur-[100px]" />
-      <div className="absolute bottom-1/3 right-1/3 w-80 h-80 bg-purple-500/5 rounded-full blur-[100px]" />
-
-      <div className="relative w-full max-w-md space-y-6 glass-card p-8 sm:p-10 shadow-2xl">
+    <div className="relative min-h-[calc(100vh-56px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-[#000000] grid-bg font-mono">
+      <div className="relative w-full max-w-md space-y-5 border border-[#27272a] bg-[#0a0a0a] p-6 sm:p-8 text-white">
         {/* Header */}
-        <div className="text-center">
-          <Link href="/" className="inline-flex items-center gap-2.5 mb-4 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-purple-600 shadow-lg shadow-cyan-500/20">
-              <Terminal className="h-5 w-5 text-white" />
+        <div className="text-center pb-4 border-b border-[#27272a]">
+          <Link href="/" className="inline-flex items-center gap-2 mb-2 group">
+            <div className="flex h-6 w-6 items-center justify-center bg-white text-black font-black text-xs">
+              ■
             </div>
-            <span className="text-xl font-bold tracking-tight">
-              <span className="gradient-text">Prompt</span>
-              <span className="text-white">Sesh</span>
+            <span className="text-sm font-black tracking-tight text-white uppercase">
+              PROMPTSESH
             </span>
           </Link>
-          <h2 className="text-2xl font-extrabold tracking-tight text-white mb-1">
-            Create your account
+          <h2 className="text-lg font-black text-white uppercase">
+            REGISTER PRACTITIONER PROFILE
           </h2>
-          <p className="text-xs text-slate-400">
-            Join PromptSesh to track your prompt engineering progress and streaks
+          <p className="text-xs text-zinc-400 font-sans mt-0.5">
+            Create an archival account to track lab completions
           </p>
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 p-3 rounded-xl">
-            <Info className="h-4 w-4 shrink-0 text-rose-400" />
+          <div className="flex items-center gap-2 text-xs text-[#ef4444] bg-[#ef4444]/10 border border-[#ef4444]/30 p-3">
+            <Info className="h-4 w-4 shrink-0 text-[#ef4444]" />
             <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-3.5">
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Full Name
+            <label className="block text-xs font-bold text-zinc-300 uppercase mb-1">
+              PRACTITIONER_NAME
             </label>
             <input
               type="text"
-              required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Alex Rivera"
-              className="w-full rounded-xl border border-white/[0.08] bg-dark-900/60 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+              placeholder="Dr. Claude Shannon"
+              className="w-full border border-[#27272a] bg-black px-3.5 py-2 text-xs text-white placeholder-zinc-600 focus:border-white focus:outline-none transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Email Address
+            <label className="block text-xs font-bold text-zinc-300 uppercase mb-1">
+              EMAIL_ADDRESS
             </label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="w-full rounded-xl border border-white/[0.08] bg-dark-900/60 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+              placeholder="practitioner@research.org"
+              className="w-full border border-[#27272a] bg-black px-3.5 py-2 text-xs text-white placeholder-zinc-600 focus:border-white focus:outline-none transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Password
+            <label className="block text-xs font-bold text-zinc-300 uppercase mb-1">
+              PASSWORD (MIN 8 CHARACTERS)
             </label>
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="At least 6 characters"
-              className="w-full rounded-xl border border-white/[0.08] bg-dark-900/60 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+              placeholder="••••••••••••"
+              className="w-full border border-[#27272a] bg-black px-3.5 py-2 text-xs text-white placeholder-zinc-600 focus:border-white focus:outline-none transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Confirm Password
+            <label className="block text-xs font-bold text-zinc-300 uppercase mb-1">
+              CONFIRM_PASSWORD
             </label>
             <input
               type="password"
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Re-enter password"
-              className="w-full rounded-xl border border-white/[0.08] bg-dark-900/60 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+              placeholder="••••••••••••"
+              className="w-full border border-[#27272a] bg-black px-3.5 py-2 text-xs text-white placeholder-zinc-600 focus:border-white focus:outline-none transition-all"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-600 hover:brightness-110 px-5 py-3 text-xs font-semibold text-white transition-all shadow-lg shadow-cyan-500/25 cursor-pointer disabled:opacity-50 mt-2"
+            className="w-full inline-flex items-center justify-center gap-2 bg-white hover:bg-zinc-200 text-black border border-white px-4 py-2.5 text-xs font-black uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50 mt-1"
           >
             {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin text-white" />
+              <Loader2 className="h-4 w-4 animate-spin text-black" />
             ) : (
-              <>
-                <CheckCircle2 className="h-4 w-4 text-white" />
-                Create PromptSesh Account
-              </>
+              "REGISTER ACCOUNT &rarr;"
             )}
           </button>
         </form>
 
-        <div className="text-center text-xs text-slate-400 pt-4 border-t border-white/[0.06]">
-          Already have an account?{" "}
+        {/* Footer */}
+        <div className="text-center text-xs text-zinc-400 pt-3 border-t border-[#27272a]">
+          ALREADY_REGISTERED?{" "}
           <Link
             href="/auth/signin"
-            className="font-bold text-cyan-400 hover:text-cyan-300 transition-colors underline underline-offset-4"
+            className="font-bold text-white hover:underline uppercase"
           >
-            Sign In
+            [SIGN_IN_HERE]
           </Link>
         </div>
       </div>
