@@ -20,6 +20,7 @@ interface RateLimitRecord {
 const memoryRateLimitMap = new Map<string, RateLimitRecord>();
 
 let upstashRatelimitInstance: Ratelimit | null = null;
+let upstashLoginRatelimitInstance: Ratelimit | null = null;
 
 function getUpstashRatelimit(): Ratelimit | null {
   if (upstashRatelimitInstance) {
@@ -46,6 +47,38 @@ function getUpstashRatelimit(): Ratelimit | null {
       return upstashRatelimitInstance;
     } catch (e) {
       console.warn("[RATE-LIMIT] Failed to initialize Upstash Redis rate limiter, using fallback:", (e as Error).message);
+    }
+  }
+
+  return null;
+}
+
+function getUpstashLoginRatelimit(): Ratelimit | null {
+  if (upstashLoginRatelimitInstance) {
+    return upstashLoginRatelimitInstance;
+  }
+
+  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+
+  if (url && token) {
+    try {
+      const redis = new Redis({
+        url,
+        token,
+      });
+
+      // Strict login throttling: 5 attempts per 15 minutes
+      upstashLoginRatelimitInstance = new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(5, "900 s"),
+        analytics: true,
+        prefix: "promptsesh_auth_lockout",
+      });
+
+      return upstashLoginRatelimitInstance;
+    } catch (e) {
+      console.warn("[RATE-LIMIT] Failed to initialize Upstash login limiter, using fallback:", (e as Error).message);
     }
   }
 
@@ -82,7 +115,37 @@ export function getRateLimitIdentifier(
 }
 
 /**
- * Executes rate limiting check against identifier.
+ * Rate limits login attempts to prevent brute-force attacks and account lockout.
+ * Limits to 5 attempts per 15 minutes (900,000 ms) per email identity.
+ */
+export async function checkLoginRateLimit(
+  email: string,
+  limit: number = 5,
+  windowMs: number = 900000
+): Promise<{ success: boolean; limit: number; remaining: number; resetTime: number }> {
+  const normalizedEmail = (email || "").toLowerCase().trim();
+  const identifier = `auth_lockout:${normalizedEmail}`;
+
+  const upstash = getUpstashLoginRatelimit();
+  if (upstash) {
+    try {
+      const res = await upstash.limit(identifier);
+      return {
+        success: res.success,
+        limit: res.limit,
+        remaining: res.remaining,
+        resetTime: res.reset,
+      };
+    } catch (err) {
+      console.warn("[RATE-LIMIT] Upstash auth lockout call error, falling back to local window:", (err as Error).message);
+    }
+  }
+
+  return checkRateLimit(identifier, limit, windowMs);
+}
+
+/**
+ * Executes general rate limiting check against identifier.
  * Works seamlessly with Upstash Redis in serverless production or memory in dev.
  */
 export async function checkRateLimit(

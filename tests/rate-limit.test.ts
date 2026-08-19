@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rate-limit";
+import { describe, it, expect } from "vitest";
+import { checkRateLimit, checkLoginRateLimit, getRateLimitIdentifier } from "@/lib/rate-limit";
 
 describe("Rate Limiter Suite", () => {
   describe("getRateLimitIdentifier", () => {
@@ -50,6 +50,36 @@ describe("Rate Limiter Suite", () => {
       const blockedRes = await checkRateLimit(id, 5, 5000);
       expect(blockedRes.success).toBe(false);
       expect(blockedRes.remaining).toBe(0);
+    });
+  });
+
+  describe("checkLoginRateLimit Brute-Force Defense", () => {
+    it("should throttle and lock out account after exceeding 5 login attempts", async () => {
+      const email = `attacker_${Date.now()}@target.com`;
+      for (let i = 0; i < 5; i++) {
+        const attempt = await checkLoginRateLimit(email, 5, 5000);
+        expect(attempt.success).toBe(true);
+      }
+
+      // 6th attempt should be blocked
+      const blockedAttempt = await checkLoginRateLimit(email, 5, 5000);
+      expect(blockedAttempt.success).toBe(false);
+      expect(blockedAttempt.remaining).toBe(0);
+    });
+
+    it("should isolate lockout keys per distinct email", async () => {
+      const emailA = `victim_a_${Date.now()}@domain.com`;
+      const emailB = `victim_b_${Date.now()}@domain.com`;
+
+      for (let i = 0; i < 5; i++) {
+        await checkLoginRateLimit(emailA, 5, 5000);
+      }
+
+      const blockedA = await checkLoginRateLimit(emailA, 5, 5000);
+      expect(blockedA.success).toBe(false);
+
+      const allowedB = await checkLoginRateLimit(emailB, 5, 5000);
+      expect(allowedB.success).toBe(true);
     });
   });
 });

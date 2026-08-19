@@ -7,11 +7,13 @@ import * as mock from "@/lib/mock-data";
 import { checkDbConnection } from "@/lib/queries";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rate-limit";
 import { submitChallengeSchema } from "@/lib/validations/challenge";
+import { captureError, logLLMTelemetry } from "@/lib/observability";
 
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  let body: any = null;
   try {
     const session = await auth();
     const userId = session?.user?.id || null;
@@ -27,7 +29,7 @@ export async function POST(
     }
 
     const { id } = await params;
-    const body = await req.json();
+    body = await req.json();
     const parseResult = submitChallengeSchema.safeParse(body);
 
     if (!parseResult.success) {
@@ -249,6 +251,13 @@ export async function POST(
           compiledPrompt,
           challenge.systemPrompt || undefined
         );
+        logLLMTelemetry({
+          provider: m.provider,
+          model: m.name,
+          latencyMs: res.executionTimeMs,
+          tokenCount: res.tokenCount,
+          success: !res.text.includes("[Evaluation Error]"),
+        });
         return {
           ...m,
           ...res,
@@ -355,7 +364,10 @@ export async function POST(
       submission: fullSubmission,
     });
   } catch (error: any) {
-    console.error("Submission grading pipeline error:", error);
+    captureError(error, {
+      tags: { route: "challenges/submit", challengeId: (await params)?.id },
+      extra: { body },
+    });
     return NextResponse.json(
       { error: error.message || "Failed to process submission grading" },
       { status: 500 }

@@ -38,6 +38,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
+        // Enforce brute-force throttling & account lockout protection
+        const { checkLoginRateLimit } = await import("@/lib/rate-limit");
+        const rateLimit = await checkLoginRateLimit(email);
+        if (!rateLimit.success) {
+          console.warn(`[AUTH][BRUTE-FORCE-BLOCKED] Rate limit exceeded for email: ${email}`);
+          throw new Error("Too many failed login attempts. Please wait 15 minutes or reset your password.");
+        }
+
         const bcrypt = await import("bcryptjs");
 
         // 1. Check PostgreSQL Database if reachable

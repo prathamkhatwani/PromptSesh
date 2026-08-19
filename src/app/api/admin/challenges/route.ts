@@ -3,18 +3,14 @@ import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { Difficulty } from "@prisma/client";
 import { createChallengeSchema } from "@/lib/validations/challenge";
+import { requireAdmin } from "@/lib/auth-guard";
 
 export async function POST(req: Request) {
   try {
     const session = await auth();
-    // Strictly require authenticated ADMIN session — no email or dev bypass
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized — authentication required" }, { status: 401 });
-    }
-
-    const user = session.user as any;
-    if (user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden — administrator privileges required" }, { status: 403 });
+    const authError = requireAdmin(session);
+    if (authError) {
+      return authError;
     }
 
     const body = await req.json();
