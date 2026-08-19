@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
 
-const inter = Inter({
+const geistSans = Geist({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-inter",
+  variable: "--font-sans",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const geistMono = Geist_Mono({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-mono",
@@ -30,33 +30,16 @@ function getMetadataBase(): URL {
 
 export const metadata: Metadata = {
   metadataBase: getMetadataBase(),
-  title: "PromptSesh — Master Prompt Engineering",
+  title: "PromptSesh — Developer Platform for Prompt Engineering",
   description:
-    "The #1 practice platform for prompt engineering. Solve challenges, get AI-graded feedback, and prove your skills across LLMs.",
+    "The deterministic workbench for prompt engineering. Solve challenges, run parallel evaluations across Llama 3.3 70B & Gemini 2.0 Flash, and inspect rubric scorecards.",
   keywords: [
     "prompt engineering",
-    "LLM",
-    "AI",
-    "practice",
-    "challenges",
-    "grading",
-    "interview prep",
+    "LLM evaluation",
+    "AI benchmarks",
+    "developer tools",
+    "rubrics",
   ],
-  openGraph: {
-    title: "PromptSesh — Master Prompt Engineering",
-    description: "The #1 practice platform for prompt engineering. Solve challenges & simulate AI interviews.",
-    siteName: "PromptSesh",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "PromptSesh — Master Prompt Engineering",
-    description: "The #1 practice platform for prompt engineering.",
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
 };
 
 export default function RootLayout({
@@ -65,8 +48,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`dark ${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className={`${inter.className} min-h-screen flex flex-col antialiased bg-dark-950 text-slate-100 selection:bg-cyan-500/30 selection:text-cyan-200`}>
+    <html
+      lang="en"
+      className={`dark ${geistSans.variable} ${geistMono.variable}`}
+    >
+      <body
+        className={`${geistSans.className} min-h-screen flex flex-col antialiased bg-[#09090b] text-zinc-100 selection:bg-indigo-600 selection:text-white`}
+      >
         <AuthSessionProvider>
           <Navbar />
           <main className="flex-1">{children}</main>

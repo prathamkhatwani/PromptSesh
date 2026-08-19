@@ -10,5 +10,5 @@ describe("Email Dispatch Service Suite", () => {
 
     expect(result.success).toBe(true);
     expect(["resend", "smtp", "ethereal-dev", "console-fallback"]).toContain(result.provider);
-  });
+  }, 15000);
 });
