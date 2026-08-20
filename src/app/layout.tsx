@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
 
-const inter = Inter({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-inter",
+  variable: "--font-sans",
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -30,33 +30,16 @@ function getMetadataBase(): URL {
 
 export const metadata: Metadata = {
   metadataBase: getMetadataBase(),
-  title: "PromptSesh — Master Prompt Engineering",
+  title: "PromptSesh — Deterministic Prompt Engineering",
   description:
-    "The #1 practice platform for prompt engineering. Solve challenges, get AI-graded feedback, and prove your skills across LLMs.",
+    "The deterministic developer platform for prompt engineering. Solve challenges, evaluate across dual LLMs, and review structured rubric evaluations.",
   keywords: [
     "prompt engineering",
-    "LLM",
-    "AI",
-    "practice",
-    "challenges",
-    "grading",
-    "interview prep",
+    "LLM evaluation",
+    "AI benchmarks",
+    "developer tools",
+    "rubrics",
   ],
-  openGraph: {
-    title: "PromptSesh — Master Prompt Engineering",
-    description: "The #1 practice platform for prompt engineering. Solve challenges & simulate AI interviews.",
-    siteName: "PromptSesh",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "PromptSesh — Master Prompt Engineering",
-    description: "The #1 practice platform for prompt engineering.",
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
 };
 
 export default function RootLayout({
@@ -65,8 +48,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`dark ${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className={`${inter.className} min-h-screen flex flex-col antialiased bg-dark-950 text-slate-100 selection:bg-cyan-500/30 selection:text-cyan-200`}>
+    <html
+      lang="en"
+      className={`dark ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
+    >
+      <body
+        className={`${spaceGrotesk.className} min-h-screen flex flex-col antialiased`}
+        style={{ backgroundColor: 'var(--canvas-base)', color: 'var(--text-primary)' }}
+      >
         <AuthSessionProvider>
           <Navbar />
           <main className="flex-1">{children}</main>
