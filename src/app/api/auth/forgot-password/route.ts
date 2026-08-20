@@ -60,7 +60,7 @@ export async function POST(req: Request) {
     }
 
     // Return generic success message to prevent user enumeration
-    const responsePayload: { success: boolean; message: string; devPreviewUrl?: string } = {
+    const responsePayload: { success: boolean; message: string; devPreviewUrl?: string; previewUrl?: string } = {
       success: true,
       message: "If an account with that email exists, a password reset link has been sent. Please check your inbox and spam folder.",
     };
@@ -68,6 +68,7 @@ export async function POST(req: Request) {
     // In local development, attach ethereal preview link if available
     if (process.env.NODE_ENV !== "production" && devPreviewUrl) {
       responsePayload.devPreviewUrl = devPreviewUrl;
+      responsePayload.previewUrl = devPreviewUrl;
     }
 
     return NextResponse.json(responsePayload);

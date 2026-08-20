@@ -9,15 +9,15 @@ export function getDifficultyBg(difficulty: string): string {
   if (!difficulty) return "";
   switch (difficulty.toLowerCase()) {
     case "easy":
-      return "bg-transparent text-zinc-400 border border-zinc-800 font-mono text-[10px] uppercase font-bold";
+      return "bg-emerald-500/12 text-emerald-400 border border-emerald-500/25 font-mono text-[10px]";
     case "medium":
-      return "bg-zinc-900 text-zinc-200 border border-zinc-600 font-mono text-[10px] uppercase font-bold";
+      return "bg-amber-500/12 text-amber-400 border border-amber-500/25 font-mono text-[10px]";
     case "hard":
-      return "bg-zinc-200 text-black border border-white font-mono text-[10px] uppercase font-extrabold";
+      return "bg-red-500/12 text-red-400 border border-red-500/25 font-mono text-[10px]";
     case "expert":
-      return "bg-white text-black border border-white font-mono text-[10px] uppercase font-black tracking-wider";
+      return "bg-purple-500/15 text-purple-400 border border-purple-500/30 font-mono text-[10px]";
     default:
-      return "bg-transparent text-zinc-500 border border-zinc-800 font-mono text-[10px] uppercase";
+      return "bg-slate-500/10 text-slate-400 border border-slate-500/20 font-mono text-[10px]";
   }
 }
 
@@ -25,15 +25,15 @@ export function getDifficultyDot(difficulty: string): string {
   if (!difficulty) return "";
   switch (difficulty.toLowerCase()) {
     case "easy":
-      return "bg-zinc-400";
+      return "bg-emerald-400";
     case "medium":
-      return "bg-zinc-200";
+      return "bg-amber-400";
     case "hard":
-      return "bg-white";
+      return "bg-red-400";
     case "expert":
-      return "bg-white";
+      return "bg-purple-400";
     default:
-      return "bg-zinc-600";
+      return "bg-slate-500";
   }
 }
 

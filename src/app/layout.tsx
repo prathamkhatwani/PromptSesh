@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
+import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
 
-const plusJakartaSans = Plus_Jakarta_Sans({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-sans",
 });
 
-const geistMono = Geist_Mono({
+const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-mono",
@@ -30,9 +30,9 @@ function getMetadataBase(): URL {
 
 export const metadata: Metadata = {
   metadataBase: getMetadataBase(),
-  title: "PROMPTSESH — SWISS MONOCHROME BENCHMARK",
+  title: "PromptSesh — Deterministic Prompt Engineering",
   description:
-    "The deterministic evaluation platform for prompt engineering. Test across dual foundation models with strict rubric telemetry.",
+    "The deterministic developer platform for prompt engineering. Solve challenges, evaluate across dual LLMs, and review structured rubric evaluations.",
   keywords: [
     "prompt engineering",
     "LLM evaluation",
@@ -50,10 +50,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`dark ${plusJakartaSans.variable} ${geistMono.variable}`}
+      className={`dark ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
     >
       <body
-        className={`${plusJakartaSans.className} min-h-screen flex flex-col antialiased bg-[#000000] text-white selection:bg-white selection:text-black`}
+        className={`${spaceGrotesk.className} min-h-screen flex flex-col antialiased`}
+        style={{ backgroundColor: 'var(--canvas-base)', color: 'var(--text-primary)' }}
       >
         <AuthSessionProvider>
           <Navbar />

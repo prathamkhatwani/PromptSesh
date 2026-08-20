@@ -18,6 +18,7 @@ import {
   UserCheck,
   CheckSquare,
   Cpu,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { getChallenges, getCategories } from "@/lib/queries";
@@ -42,45 +43,45 @@ const iconMap: Record<string, LucideIcon> = {
 const steps = [
   {
     number: "01",
-    title: "1. PROMPT SPECIFICATION",
+    title: "Draft Prompt Templates",
     description:
-      "Formulate deterministic prompt architectures with strict input assertions and schema boundaries.",
+      "Craft deterministic prompt architectures with variables, system constraints, and strict output boundaries.",
     icon: Code,
   },
   {
     number: "02",
-    title: "2. DUAL-ENGINE TESTING",
+    title: "Parallel Multi-Model Testing",
     description:
-      "Simultaneously execute across Meta Llama 3.3 70B and Google Gemini 2.0 Flash to detect latency and variance.",
+      "Simultaneously dispatch to Meta Llama 3.3 70B and Google Gemini 2.0 Flash to observe token variance and latency drift.",
     icon: Cpu,
   },
   {
     number: "03",
-    title: "3. AUTOMATED RUBRICS",
+    title: "Automated Rubric Scorecards",
     description:
-      "Structured judge models score submissions against deterministic criteria with exact numeric telemetry.",
+      "Rigorous judge engines score RFC schema compliance, token budgets, safety guardrails, and reasoning fidelity.",
     icon: BarChart3,
   },
 ];
 
 const features = [
   {
-    tag: "[01. RUBRICS]",
-    title: "MULTI-FACTOR EVALUATION",
+    tag: "DETERMINISTIC EVALUATION",
+    title: "Multi-Criteria Rubric Scoring",
     description:
-      "Zero vibes-based grading. Submissions are scored on structured RFC schema compliance, token limits, and safety invariants.",
+      "Zero vibes-based grading. Submissions are scored against strict schema parsing, token budgets, and edge-case reasoning.",
   },
   {
-    tag: "[02. COMPATIBILITY]",
-    title: "CROSS-MODEL CALIBRATION",
+    tag: "CROSS-MODEL BENCHMARK",
+    title: "Foundation Model Verification",
     description:
-      "Parallel verification against Meta Llama 3.3 70B and Google Gemini 2.0 Flash to eliminate vendor lock-in.",
+      "Test against Meta Llama 3.3 70B and Google Gemini 2.0 Flash in real-time. Catch vendor-specific regressions before production.",
   },
   {
-    tag: "[03. PORTFOLIO]",
-    title: "VERIFIED BENCHMARKS",
+    tag: "PORTFOLIO METRICS",
+    title: "Verifiable Engineering Portfolio",
     description:
-      "Curate verifiable submission records, benchmark percentiles, and streak records for engineering evaluation.",
+      "Build a verifiable record of solved specifications, benchmark percentiles, and streak consistency for engineering teams.",
   },
 ];
 
@@ -91,92 +92,72 @@ export default async function HomePage() {
   ]);
 
   return (
-    <div className="relative bg-[#000000] text-white">
-      {/* ── Hero Section (Stark Swiss) ───────────────────── */}
-      <section className="relative pt-20 pb-24 sm:pt-28 sm:pb-32 border-b border-[#27272a] grid-bg">
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+    <div className="relative bg-[#0F172A] text-slate-50">
+      {/* ── Hero Section ───────────────────────────────────── */}
+      <section className="hero-glow relative overflow-hidden pt-20 pb-24 sm:pt-28 sm:pb-32 border-b border-white/[0.08]">
+        <div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
-            {/* Swiss System Stamp */}
-            <div className="inline-block border border-white bg-black px-3 py-1 text-[11px] font-mono font-bold tracking-widest text-white uppercase mb-8">
-              PROMPTSESH // SWISS BENCHMARK SPECIFICATION
+            {/* Emerald Pill Badge */}
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-semibold text-emerald-400 mb-8">
+              <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+              <span>PromptSesh 2.0 // Dual Foundation LLMs Active</span>
             </div>
 
-            {/* Stark Uppercase Headline */}
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white leading-none uppercase mb-6">
-              THE EMPIRICAL BENCHMARK <br />
-              <span className="text-zinc-400">FOR PROMPT ENGINEERING</span>.
+            {/* Heading with accent-gradient */}
+            <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-white leading-[1.12] mb-6">
+              Master{" "}
+              <span className="accent-gradient">Prompt Engineering</span>{" "}
+              with Empirical Precision.
             </h1>
 
             {/* Subtitle */}
-            <p className="text-xs sm:text-sm text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-10 font-mono">
-              Deterministic challenge environments for language model practitioners. Test across open foundation models, inspect weighted rubric breakdowns, and develop rigorous AI engineering competence.
+            <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed mb-10">
+              The modern practice workbench for LLM engineers. Solve
+              deterministic challenges, test across Llama 3.3 70B &amp; Gemini
+              2.0 Flash, and inspect rubric scorecards.
             </p>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-14 font-mono">
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-14">
               <Link
                 href="/challenges"
-                className="w-full sm:w-auto px-6 py-3 bg-white hover:bg-zinc-200 text-black border border-white font-black text-xs uppercase tracking-wider transition-all"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-md bg-emerald-500 hover:bg-emerald-400 text-slate-900 px-5 py-2.5 text-xs font-bold cursor-pointer transition-all duration-200"
               >
-                OPEN CHALLENGE CATALOGUE &rarr;
+                Explore Challenges
+                <ArrowRight className="h-3.5 w-3.5" />
               </Link>
               <Link
                 href="/interview-simulator"
-                className="w-full sm:w-auto px-6 py-3 bg-black hover:bg-zinc-900 text-white border border-zinc-700 hover:border-white font-bold text-xs uppercase tracking-wider transition-all"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-md bg-[#192134] border border-white/[0.08] text-white hover:border-emerald-500/40 px-5 py-2.5 text-xs font-semibold cursor-pointer transition-all duration-200"
               >
-                INTERVIEW SIMULATOR
+                Technical Interview Simulator
               </Link>
             </div>
 
             {/* Stats Strip */}
-            <div className="grid grid-cols-3 gap-0 max-w-lg mx-auto border border-[#27272a] bg-[#0a0a0a] text-center font-mono">
-              <div className="p-3 border-r border-[#27272a]">
-                <div className="text-xl sm:text-2xl font-black text-white">{challenges.length}+</div>
-                <div className="text-[9px] text-zinc-500 uppercase tracking-widest mt-0.5">LABS</div>
-              </div>
-              <div className="p-3 border-r border-[#27272a]">
-                <div className="text-xl sm:text-2xl font-black text-white">{categories.length}</div>
-                <div className="text-[9px] text-zinc-500 uppercase tracking-widest mt-0.5">TRACKS</div>
-              </div>
-              <div className="p-3">
-                <div className="text-xl sm:text-2xl font-black text-white">2 FREE</div>
-                <div className="text-[9px] text-zinc-500 uppercase tracking-widest mt-0.5">MODELS</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Swiss Specimen Box */}
-          <div className="mt-14 mx-auto max-w-4xl border border-[#27272a] bg-[#0a0a0a] p-6 shadow-sm font-mono">
-            <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#27272a] text-xs">
-              <div className="flex items-center gap-2">
-                <span className="bg-white text-black px-1.5 py-0.2 font-black text-[10px]">TEST</span>
-                <span className="text-white font-bold">SPECIMEN // INVOICE_SCHEMA_PARSER</span>
-              </div>
-              <span className="border border-white bg-white text-black px-2 py-0.5 text-[10px] font-black">
-                SCORE: 100/100 [PASS]
-              </span>
-            </div>
-
-            <div className="space-y-3 text-xs leading-relaxed text-zinc-300">
-              <div className="bg-black p-3 border border-zinc-800 text-[12px]">
-                <span className="text-white font-bold">SYSTEM_PROMPT &gt;</span> You are an authoritative data validation engine. Extract transactions strictly adhering to RFC-8259 JSON format without conversational commentary.
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 font-mono">
-                <div className="border border-zinc-800 bg-black p-3">
-                  <div className="text-[10px] text-zinc-500 uppercase font-bold">SCHEMA VALIDITY</div>
-                  <div className="text-sm font-black text-white mt-1">100% VALID</div>
-                  <div className="text-[10px] text-zinc-500 mt-0.5">RFC-8259 confirmed</div>
+            <div className="grid grid-cols-3 gap-3 max-w-lg mx-auto rounded-lg border border-white/[0.08] bg-[#192134] p-3">
+              <div className="text-center border-r border-white/[0.08] pr-2">
+                <div className="text-xl sm:text-2xl font-bold text-white">
+                  {challenges.length}+
                 </div>
-                <div className="border border-zinc-800 bg-black p-3">
-                  <div className="text-[10px] text-zinc-500 uppercase font-bold">BOUNDARY INVARIANCE</div>
-                  <div className="text-sm font-black text-white mt-1">100% SECURE</div>
-                  <div className="text-[10px] text-zinc-500 mt-0.5">Zero injection leakage</div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-mono">
+                  CHALLENGES
                 </div>
-                <div className="border border-white bg-black p-3">
-                  <div className="text-[10px] text-white uppercase font-bold">TOKEN EFFICIENCY</div>
-                  <div className="text-sm font-black text-white mt-1">96% OPTIMAL</div>
-                  <div className="text-[10px] text-zinc-400 mt-0.5">Under 220 output tokens</div>
+              </div>
+              <div className="text-center border-r border-white/[0.08] px-2">
+                <div className="text-xl sm:text-2xl font-bold text-emerald-400">
+                  {categories.length}
+                </div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-mono">
+                  TRACKS
+                </div>
+              </div>
+              <div className="text-center pl-2">
+                <div className="text-xl sm:text-2xl font-bold text-blue-400">
+                  2 FREE
+                </div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-mono">
+                  MODELS
                 </div>
               </div>
             </div>
@@ -184,50 +165,122 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Skill Categories Grid ────────────────────────── */}
-      <section className="py-16 border-b border-[#27272a] bg-[#050505]">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 pb-4 border-b border-[#27272a] gap-2">
-            <div>
-              <div className="text-[11px] font-mono font-bold text-white uppercase tracking-wider mb-1">
-                // CURRICULUM_INDEX
+      {/* ── Specimen Box ───────────────────────────────────── */}
+      <section className="relative -mt-10 z-10 pb-16 border-b border-white/[0.08]">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <div className="rounded-lg border border-white/[0.08] bg-[#192134] p-5 sm:p-6 shadow-2xl">
+            {/* Specimen Header */}
+            <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-white/[0.08] text-xs">
+              <div className="flex items-center gap-2 text-slate-400 font-mono">
+                <span className="text-emerald-400 font-semibold">&gt;</span>
+                <span>specimen // invoice_parser_spec.ts</span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-black text-white uppercase">
-                Skill Tracks & Disciplines
+              <div className="flex items-center gap-2 font-mono">
+                <span className="rounded bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 px-2 py-0.5 text-[10px] font-bold">
+                  Score: 100/100
+                </span>
+                <span className="text-slate-500 text-[10px] hidden sm:inline">
+                  142ms // Gemini 2.0 Flash
+                </span>
+              </div>
+            </div>
+
+            {/* Specimen Body */}
+            <div className="space-y-3 text-xs leading-relaxed text-slate-50 font-mono">
+              <div className="bg-[#0B1120] p-3 rounded-md border border-white/[0.08]">
+                <span className="text-emerald-400 font-medium">
+                  SYSTEM &gt;
+                </span>{" "}
+                You are a production data parser. Extract transactions strictly
+                adhering to RFC-8259 JSON format with zero conversational filler.
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 font-sans">
+                <div className="rounded-md border border-white/[0.08] bg-[#0F172A] p-3">
+                  <div className="text-[10px] font-mono text-slate-400 uppercase font-semibold">
+                    Schema Compliance
+                  </div>
+                  <div className="font-bold text-sm text-white mt-0.5">
+                    100% Valid
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">
+                    Strict RFC parser confirmed
+                  </div>
+                </div>
+                <div className="rounded-md border border-white/[0.08] bg-[#0F172A] p-3">
+                  <div className="text-[10px] font-mono text-slate-400 uppercase font-semibold">
+                    Boundary Defense
+                  </div>
+                  <div className="font-bold text-sm text-white mt-0.5">
+                    100% Invariance
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">
+                    Zero injection leakage
+                  </div>
+                </div>
+                <div className="rounded-md border border-emerald-500/40 bg-[#0F172A] p-3">
+                  <div className="text-[10px] font-mono text-emerald-400 uppercase font-semibold">
+                    Token Efficiency
+                  </div>
+                  <div className="font-bold text-sm text-emerald-400 mt-0.5">
+                    96% Optimal
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">
+                    240 token budget
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Skill Categories Grid ──────────────────────────── */}
+      <section className="py-16 border-b border-white/[0.08] bg-[#0F172A]">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 pb-4 border-b border-white/[0.08] gap-2">
+            <div>
+              <div className="text-[11px] font-mono font-semibold text-emerald-400 uppercase tracking-wider mb-1">
+                CURRICULUM
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-white">
+                Skill Tracks &amp; Disciplines
               </h2>
             </div>
-            <p className="text-xs text-zinc-400 max-w-sm font-mono">
-              Deterministic curricula organized by architectural specifications.
+            <p className="text-xs text-slate-400 max-w-sm">
+              Structured engineering tracks categorized by production
+              requirements.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {categories.map((cat: any, idx: number) => {
+            {categories.map((cat: any) => {
               const Icon = iconMap[cat.icon] || Zap;
               return (
                 <Link
                   key={cat.id}
                   href={`/challenges?category=${cat.slug}`}
-                  className="p-4 border border-[#27272a] bg-[#0a0a0a] hover:border-white hover:bg-[#121212] transition-all group block font-mono"
+                  className="p-4 rounded-lg border border-white/[0.08] bg-[#192134] hover:bg-[#243044] hover:border-white/[0.14] transition-all duration-200 group block cursor-pointer"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center border border-zinc-800 bg-black text-white group-hover:border-white">
-                      <Icon className="h-3.5 w-3.5" />
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-white/[0.08] bg-[#0F172A] text-emerald-400 group-hover:border-emerald-500/40 group-hover:text-emerald-300 transition-colors duration-200">
+                      <Icon className="h-4 w-4" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1 mb-1">
-                        <span className="text-xs font-bold text-white group-hover:underline truncate uppercase">
-                          [{String(idx + 1).padStart(2, "0")}] {cat.name}
+                        <span className="text-xs font-bold text-white group-hover:text-emerald-400 truncate transition-colors duration-200">
+                          {cat.name}
                         </span>
-                        <span className="text-[10px] text-black bg-white font-black px-1 shrink-0">
-                          {cat.challengeCount}
+                        <span className="text-[10px] text-slate-400 border border-white/[0.08] bg-[#0F172A] px-1.5 py-0.5 rounded shrink-0 font-mono">
+                          {cat.challengeCount} Labs
                         </span>
                       </div>
-                      <p className="text-[11px] text-zinc-400 line-clamp-2 leading-relaxed mb-2 font-sans">
+                      <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed mb-2">
                         {cat.description}
                       </p>
-                      <div className="text-[10px] font-bold text-white flex items-center gap-1">
-                        EXECUTE_TRACK &rarr;
+                      <div className="text-[10px] font-semibold text-emerald-400 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform duration-200">
+                        Explore Track
+                        <ArrowRight className="h-3 w-3" />
                       </div>
                     </div>
                   </div>
@@ -238,32 +291,34 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Workflow Steps ──────────────────────────────── */}
-      <section className="py-16 border-b border-[#27272a] bg-[#000000]">
+      {/* ── Workflow Steps ──────────────────────────────────── */}
+      <section className="py-16 border-b border-white/[0.08] bg-[#1E293B]">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <div className="text-[11px] font-mono font-bold text-zinc-400 uppercase tracking-wider mb-1">
-              // METHODOLOGY
+            <div className="text-[11px] font-mono font-semibold text-emerald-400 uppercase tracking-wider mb-1">
+              PIPELINE
             </div>
-            <h2 className="text-xl sm:text-2xl font-black text-white uppercase">
-              Evaluation Procedure
+            <h2 className="text-xl sm:text-2xl font-bold text-white">
+              Evaluation Methodology
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {steps.map((step) => (
               <div
                 key={step.number}
-                className="p-5 border border-[#27272a] bg-[#0a0a0a]"
+                className="p-5 rounded-lg border border-white/[0.08] bg-[#192134]"
               >
-                <div className="flex items-center justify-between mb-3 border-b border-[#27272a] pb-2 text-xs">
-                  <span className="font-bold text-white">PHASE_{step.number}</span>
-                  <step.icon className="h-4 w-4 text-zinc-500" />
+                <div className="flex items-center justify-between mb-3 border-b border-white/[0.08] pb-2 text-xs">
+                  <span className="font-mono text-xs font-bold text-emerald-400">
+                    STAGE {step.number}
+                  </span>
+                  <step.icon className="h-4 w-4 text-slate-400" />
                 </div>
-                <h3 className="text-xs font-black text-white mb-2 uppercase">
+                <h3 className="text-xs font-bold text-white mb-1.5">
                   {step.title}
                 </h3>
-                <p className="text-xs text-zinc-400 leading-relaxed font-sans">
+                <p className="text-xs text-slate-400 leading-relaxed">
                   {step.description}
                 </p>
               </div>
@@ -272,29 +327,31 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Features ─────────────────────────────────────── */}
-      <section className="py-16 border-b border-[#27272a] bg-[#050505]">
+      {/* ── Features ───────────────────────────────────────── */}
+      <section className="py-16 border-b border-white/[0.08] bg-[#0F172A]">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <div className="text-[11px] font-mono font-bold text-zinc-400 uppercase tracking-wider mb-1">
-              // ARCHITECTURE
+            <div className="text-[11px] font-mono font-semibold text-emerald-400 uppercase tracking-wider mb-1">
+              ARCHITECTURE
             </div>
-            <h2 className="text-xl sm:text-2xl font-black text-white uppercase">
-              System Capabilities
+            <h2 className="text-xl sm:text-2xl font-bold text-white">
+              Built for Engineering Rigor
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="p-5 border border-[#27272a] bg-[#0a0a0a]"
+                className="p-5 rounded-lg border border-white/[0.08] bg-[#192134]"
               >
-                <div className="text-[10px] font-bold text-zinc-400 mb-2">{feature.tag}</div>
-                <h3 className="text-xs font-black text-white mb-2 uppercase">
+                <div className="text-[10px] font-mono font-bold text-emerald-400 mb-2 uppercase tracking-wider">
+                  {feature.tag}
+                </div>
+                <h3 className="text-xs font-bold text-white mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-xs text-zinc-400 leading-relaxed font-sans">
+                <p className="text-xs text-slate-400 leading-relaxed">
                   {feature.description}
                 </p>
               </div>
@@ -303,22 +360,26 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Bottom Callout ──────────────────────────────── */}
-      <section className="py-16 bg-[#000000]">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center font-mono">
-          <div className="border border-white bg-[#0a0a0a] p-8 sm:p-10">
-            <div className="text-[11px] font-bold text-zinc-400 mb-2">[BENCHMARK COMMISSION]</div>
-            <h2 className="text-xl sm:text-2xl font-black text-white mb-3 uppercase">
-              INITIALIZE EMPIRICAL PRACTICE
+      {/* ── Bottom CTA ─────────────────────────────────────── */}
+      <section className="py-16 bg-[#0F172A]">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
+          <div className="rounded-lg border border-emerald-500/40 bg-[#192134] p-8 sm:p-10">
+            <div className="text-[11px] font-mono font-bold text-emerald-400 mb-2 uppercase tracking-wider">
+              [BENCHMARK COMMISSION]
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-3">
+              Ready to verify your prompt engineering skills?
             </h2>
-            <p className="text-xs sm:text-sm text-zinc-400 mb-6 max-w-md mx-auto leading-relaxed font-sans">
-              Access 100+ prompt engineering labs graded on strict academic rubrics with free open models.
+            <p className="text-xs sm:text-sm text-slate-400 mb-6 max-w-md mx-auto leading-relaxed">
+              Start practicing now with Level 1 challenges and advance through
+              expert multi-model reasoning and jailbreak defense.
             </p>
             <Link
               href="/challenges"
-              className="inline-block px-8 py-3 bg-white hover:bg-zinc-200 text-black border border-white font-black text-xs uppercase tracking-wider transition-all"
+              className="inline-flex items-center gap-2 rounded-md bg-emerald-500 hover:bg-emerald-400 text-slate-900 px-6 py-2.5 text-xs font-bold cursor-pointer transition-all duration-200"
             >
-              INITIALIZE_CURRICULUM &rarr;
+              Start Practicing
+              <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
         </div>

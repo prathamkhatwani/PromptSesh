@@ -1,206 +1,189 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { Loader2, Info } from "lucide-react";
+import { Terminal, AlertCircle, Info, Mail, Lock } from "lucide-react";
 
 function SignInForm() {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/challenges";
+  const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
+  const errorParam = searchParams.get("error");
+  const notice = searchParams.get("notice");
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(true);
-  const [loading, setLoading] = useState<string | null>(null);
-  const urlError = searchParams.get("error");
-  const [error, setError] = useState<string | null>(
-    urlError === "CredentialsSignin" || urlError === "Configuration"
-      ? "Invalid credentials or account throttled. Please check your details."
-      : urlError
-  );
-  const [notice, setNotice] = useState<string | null>(null);
+  const [remember, setRemember] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleCredentialsSignIn = async (e: React.FormEvent) => {
+  const errorMessages: Record<string, string> = {
+    CredentialsSignin: "Invalid email or password. Please try again.",
+    OAuthAccountNotLinked:
+      "This email is already linked to another provider.",
+    default: "An unexpected error occurred. Please try again.",
+  };
+
+  const errorText = errorParam
+    ? errorMessages[errorParam] ?? errorMessages.default
+    : null;
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email || !password) {
-      setError("Please enter both account email and password.");
-      return;
-    }
-
-    setLoading("credentials");
-    setError(null);
-    setNotice(null);
-
-    try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        callbackUrl,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        setError("Invalid email or password. Please verify credentials or reset password.");
-      } else if (result?.url) {
-        window.location.href = result.url;
-      }
-    } catch (err: any) {
-      setError("Authentication error. Please try again later.");
-    } finally {
-      setLoading(null);
-    }
-  };
-
-  const handleGitHubSignIn = async () => {
-    setLoading("github");
-    setError(null);
-    setNotice(null);
-    try {
-      await signIn("github", { callbackUrl });
-    } catch (error) {
-      setError("GitHub OAuth connection failed. Please try again or use email signin.");
-    } finally {
-      setLoading(null);
-    }
-  };
+    setLoading(true);
+    await signIn("credentials", {
+      email,
+      password,
+      callbackUrl,
+    });
+    setLoading(false);
+  }
 
   return (
-    <div className="relative w-full max-w-md space-y-5 border border-[#27272a] bg-[#0a0a0a] p-6 sm:p-8 font-mono text-white">
-      {/* Header */}
-      <div className="text-center pb-4 border-b border-[#27272a]">
-        <Link href="/" className="inline-flex items-center gap-2 mb-2 group">
-          <div className="flex h-6 w-6 items-center justify-center bg-white text-black font-black text-xs">
-            ■
+    <div className="min-h-screen flex items-center justify-center bg-[#0F172A] px-4 hero-glow">
+      <div className="w-full max-w-md">
+        {/* Brand Header */}
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10">
+            <Terminal className="h-6 w-6 text-emerald-400" />
           </div>
-          <span className="text-sm font-black tracking-tight text-white uppercase">
-            PROMPTSESH
-          </span>
-        </Link>
-        <h2 className="text-lg font-black text-white uppercase">
-          PRACTITIONER AUTHENTICATION
-        </h2>
-        <p className="text-xs text-zinc-400 font-sans mt-0.5">
-          Sign in to access your challenges and submission records
-        </p>
-      </div>
-
-      {error && (
-        <div className="flex items-center gap-2 text-xs text-[#ef4444] bg-[#ef4444]/10 border border-[#ef4444]/30 p-3">
-          <Info className="h-4 w-4 shrink-0 text-[#ef4444]" />
-          <span>{error}</span>
-        </div>
-      )}
-
-      {notice && (
-        <div className="flex items-center gap-2 text-xs text-white bg-zinc-900 border border-white p-3">
-          <Info className="h-4 w-4 shrink-0 text-white animate-pulse" />
-          <span>{notice}</span>
-        </div>
-      )}
-
-      {/* Form */}
-      <form onSubmit={handleCredentialsSignIn} className="space-y-4">
-        <div>
-          <label className="block text-xs font-bold text-zinc-300 uppercase mb-1.5">
-            ACCOUNT_EMAIL
-          </label>
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="practitioner@institution.org"
-            className="w-full border border-[#27272a] bg-black px-3.5 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-white focus:outline-none transition-all"
-          />
+          <h1 className="font-sans text-2xl font-bold text-white">
+            Welcome back
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
+            Sign in to continue your coding journey
+          </p>
         </div>
 
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-xs font-bold text-zinc-300 uppercase">
-              PASSWORD
-            </label>
-            <Link
-              href="/auth/forgot-password"
-              className="text-xs text-zinc-400 hover:text-white underline font-bold"
+        {/* Card */}
+        <div className="rounded-lg border border-white/[0.08] bg-[#192134] p-6 sm:p-8">
+          {/* Error Alert */}
+          {errorText && (
+            <div className="mb-5 flex items-start gap-2.5 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>{errorText}</span>
+            </div>
+          )}
+
+          {/* Notice Alert */}
+          {notice && (
+            <div className="mb-5 flex items-start gap-2.5 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-sm text-blue-400">
+              <Info className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>{notice}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Email */}
+            <div>
+              <label
+                htmlFor="email"
+                className="mb-1.5 block font-mono text-[10px] uppercase tracking-wider text-slate-500"
+              >
+                Email
+              </label>
+              <div className="relative">
+                <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                <input
+                  id="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="w-full rounded-md border border-white/[0.08] bg-[#0F172A] py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 transition-colors duration-150 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/30"
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div>
+              <div className="mb-1.5 flex items-center justify-between">
+                <label
+                  htmlFor="password"
+                  className="block font-mono text-[10px] uppercase tracking-wider text-slate-500"
+                >
+                  Password
+                </label>
+                <Link
+                  href="/auth/forgot-password"
+                  className="font-mono text-[10px] uppercase tracking-wider text-emerald-400 transition-colors duration-150 hover:text-emerald-300"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+              <div className="relative">
+                <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                <input
+                  id="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full rounded-md border border-white/[0.08] bg-[#0F172A] py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 transition-colors duration-150 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/30"
+                />
+              </div>
+            </div>
+
+            {/* Remember Me */}
+            <div className="flex items-center gap-2">
+              <input
+                id="remember"
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+                className="h-3.5 w-3.5 rounded border-white/[0.08] bg-[#0F172A] text-emerald-500 focus:ring-emerald-500/30 cursor-pointer"
+              />
+              <label
+                htmlFor="remember"
+                className="cursor-pointer text-xs text-slate-400"
+              >
+                Remember me
+              </label>
+            </div>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full cursor-pointer rounded-md bg-emerald-500 py-2.5 text-sm font-bold text-slate-900 transition-colors duration-150 hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              [FORGOT_PWD?]
-            </Link>
+              {loading ? "Signing in…" : "Sign In"}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="my-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-white/[0.08]" />
+            <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500">
+              Or continue with
+            </span>
+            <div className="h-px flex-1 bg-white/[0.08]" />
           </div>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••••••"
-            className="w-full border border-[#27272a] bg-black px-3.5 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-white focus:outline-none transition-all"
-          />
-        </div>
 
-        {/* Remember Me */}
-        <div className="flex items-center justify-between text-xs text-zinc-400 pt-1">
-          <label className="flex items-center gap-2 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              className="accent-white h-3.5 w-3.5 cursor-pointer"
-            />
-            <span>PERSIST_SESSION</span>
-          </label>
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading !== null}
-          className="w-full inline-flex items-center justify-center gap-2 bg-white hover:bg-zinc-200 text-black border border-white px-4 py-2.5 text-xs font-black uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50"
-        >
-          {loading === "credentials" ? (
-            <Loader2 className="h-4 w-4 animate-spin text-black" />
-          ) : (
-            "AUTHENTICATE &rarr;"
-          )}
-        </button>
-      </form>
-
-      {/* Divider */}
-      <div className="relative my-3">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-[#27272a]" />
-        </div>
-        <div className="relative flex justify-center text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
-          <span className="bg-[#0a0a0a] px-2">// OR_GITHUB</span>
-        </div>
-      </div>
-
-      {/* GitHub Button */}
-      <div>
-        <button
-          type="button"
-          onClick={handleGitHubSignIn}
-          disabled={loading !== null}
-          className="w-full inline-flex items-center justify-center gap-2 border border-[#27272a] bg-black hover:bg-[#181818] hover:border-white px-4 py-2.5 text-xs font-bold text-white transition-all cursor-pointer disabled:opacity-50 uppercase"
-        >
-          {loading === "github" ? (
-            <Loader2 className="h-4 w-4 animate-spin text-white" />
-          ) : (
-            <svg className="h-4 w-4 fill-current text-white" viewBox="0 0 24 24">
-              <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.164 22 16.418 22 12c0-5.523-4.477-10-10-10z" />
+          {/* GitHub OAuth */}
+          <button
+            onClick={() => signIn("github", { callbackUrl })}
+            className="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-md border border-white/[0.08] bg-[#192134] py-2.5 text-sm font-medium text-white transition-colors duration-150 hover:border-emerald-500/40 hover:bg-[#243044]"
+          >
+            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12Z" />
             </svg>
-          )}
-          CONTINUE_WITH_GITHUB
-        </button>
-      </div>
+            Continue with GitHub
+          </button>
+        </div>
 
-      {/* Footer link */}
-      <div className="text-center text-xs text-zinc-400 pt-3 border-t border-[#27272a]">
-        NO_ACCOUNT_REGISTERED?{" "}
-        <Link
-          href="/auth/signup"
-          className="font-bold text-white hover:underline uppercase"
-        >
-          [REGISTER_NEW_USER]
-        </Link>
+        {/* Footer */}
+        <p className="mt-6 text-center text-sm text-slate-400">
+          Don&apos;t have an account?{" "}
+          <Link
+            href="/auth/signup"
+            className="font-medium text-emerald-400 transition-colors duration-150 hover:text-emerald-300"
+          >
+            Sign up
+          </Link>
+        </p>
       </div>
     </div>
   );
@@ -208,12 +191,14 @@ function SignInForm() {
 
 export default function SignInPage() {
   return (
-    <div className="relative min-h-[calc(100vh-56px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-[#000000] grid-bg">
-      <Suspense fallback={
-        <div className="text-center text-zinc-400 text-xs font-mono">// INITIALIZING_SESSION...</div>
-      }>
-        <SignInForm />
-      </Suspense>
-    </div>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-[#0F172A]">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
+        </div>
+      }
+    >
+      <SignInForm />
+    </Suspense>
   );
 }
