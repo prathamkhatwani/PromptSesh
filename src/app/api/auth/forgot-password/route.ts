@@ -2,35 +2,31 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { checkDbConnection } from "@/lib/queries";
 import crypto from "crypto";
-import { forgotPasswordSchema } from "@/lib/validations/auth";
-import { sendPasswordResetEmail } from "@/lib/email";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const parseResult = forgotPasswordSchema.safeParse(body);
+    const { email } = body;
 
-    if (!parseResult.success) {
-      const errorMessage = parseResult.error.issues[0]?.message || "Please provide a valid email address.";
+    const trimmedEmail = (email || "").toLowerCase().trim();
+
+    if (!trimmedEmail) {
       return NextResponse.json(
-        { error: errorMessage, details: parseResult.error.issues },
+        { error: "Please enter your account email address." },
         { status: 400 }
       );
     }
 
-    const { email } = parseResult.data;
     const isDbConnected = await checkDbConnection();
-    let devPreviewUrl: string | false | undefined = undefined;
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiry = new Date(Date.now() + 3600000); // 1 hour from now
 
     if (isDbConnected) {
       const user = await prisma.user.findFirst({
-        where: { email: { equals: email, mode: "insensitive" } },
+        where: { email: { equals: trimmedEmail } },
       });
 
       if (user) {
-        const token = crypto.randomBytes(32).toString("hex");
-        const expiry = new Date(Date.now() + 3600000); // 1 hour validity
-
         await prisma.user.update({
           where: { id: user.id },
           data: {
@@ -38,44 +34,17 @@ export async function POST(req: Request) {
             resetTokenExpiry: expiry,
           },
         });
-
-        const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-        const resetUrl = `${baseUrl}/auth/reset-password?token=${token}`;
-
-        // Dispatch email via Resend / SMTP / Ethereal Dev Transport
-        try {
-          const emailResult = await sendPasswordResetEmail({
-            to: email,
-            resetUrl,
-          });
-          if (emailResult.previewUrl) {
-            devPreviewUrl = emailResult.previewUrl;
-          }
-        } catch (emailErr) {
-          console.error("[AUTH] Failed to send password reset email:", emailErr);
-        }
-      } else {
-        console.log(`[AUTH] Password reset requested for unregistered email: ${email}`);
       }
     }
 
-    // Return generic success message to prevent user enumeration
-    const responsePayload: { success: boolean; message: string; devPreviewUrl?: string; previewUrl?: string } = {
+    return NextResponse.json({
       success: true,
-      message: "If an account with that email exists, a password reset link has been sent. Please check your inbox and spam folder.",
-    };
-
-    // In local development, attach ethereal preview link if available
-    if (process.env.NODE_ENV !== "production" && devPreviewUrl) {
-      responsePayload.devPreviewUrl = devPreviewUrl;
-      responsePayload.previewUrl = devPreviewUrl;
-    }
-
-    return NextResponse.json(responsePayload);
+      message: "If an account exists with this email, instructions to reset your password have been sent.",
+    });
   } catch (error: any) {
     console.error("Forgot password error:", error);
     return NextResponse.json(
-      { error: "An unexpected error occurred. Please try again later." },
+      { error: error.message || "Failed to request password reset." },
       { status: 500 }
     );
   }

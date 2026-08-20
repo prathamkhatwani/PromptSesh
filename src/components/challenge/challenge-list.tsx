@@ -2,12 +2,13 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Search, ArrowUpDown, Terminal } from "lucide-react";
+import {
+  Search,
+  CheckCircle2,
+  Lock,
+  ArrowUpDown,
+} from "lucide-react";
 import { getDifficultyBg, formatNumber } from "@/lib/utils";
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
 
 interface Category {
   id: string;
@@ -21,7 +22,7 @@ interface Challenge {
   id: string;
   title: string;
   slug: string;
-  difficulty: string;
+  difficulty: "Easy" | "Medium" | "Hard" | "Expert";
   category: string;
   categorySlug: string;
   acceptanceRate: number;
@@ -36,420 +37,333 @@ interface ChallengeListProps {
   initialCategoryFilter?: string;
 }
 
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
+const difficulties = ["All", "EASY", "MEDIUM", "HARD", "EXPERT"] as const;
 
-const DIFFICULTY_TABS = ["All", "Easy", "Medium", "Hard", "Expert"] as const;
-
-type SortKey =
-  | "title"
-  | "difficulty"
-  | "category"
-  | "acceptanceRate"
-  | "totalSubmissions";
-
-const DIFFICULTY_ORDER: Record<string, number> = {
-  Easy: 0,
-  Medium: 1,
-  Hard: 2,
-  Expert: 3,
-};
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function getDifficultyText(difficulty: string): string {
-  switch (difficulty) {
-    case "Easy":
-      return "text-emerald-400";
-    case "Medium":
-      return "text-amber-400";
-    case "Hard":
-      return "text-red-400";
-    case "Expert":
-      return "text-purple-400";
-    default:
-      return "text-slate-400";
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
+type SortField = "title" | "difficulty" | "acceptanceRate" | "totalSubmissions";
+type SortDirection = "asc" | "desc";
 
 export function ChallengeList({
   initialChallenges,
   initialCategories,
-  initialCategoryFilter = "",
+  initialCategoryFilter,
 }: ChallengeListProps) {
-  // -- state ----------------------------------------------------------------
   const [search, setSearch] = useState("");
-  const [difficulty, setDifficulty] = useState<string>("All");
-  const [activeCategory, setActiveCategory] = useState<string>(
-    initialCategoryFilter
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string>("All");
+  
+  // Find matching category name from slug if passed
+  const matchingCat = initialCategoryFilter
+    ? initialCategories.find((c) => c.slug === initialCategoryFilter || c.name.toLowerCase() === initialCategoryFilter.toLowerCase())
+    : null;
+    
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    matchingCat ? matchingCat.slug : "All"
   );
-  const [sortKey, setSortKey] = useState<SortKey>("title");
-  const [sortAsc, setSortAsc] = useState(true);
+  const [sortField, setSortField] = useState<SortField>("title");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
-  // -- derived data ---------------------------------------------------------
-  const filtered = useMemo(() => {
-    let list = initialChallenges;
+  const filteredChallenges = useMemo(() => {
+    let filtered = [...initialChallenges];
 
-    // search
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
-      list = list.filter(
+    if (search) {
+      const q = search.toLowerCase();
+      filtered = filtered.filter(
         (c) =>
           c.title.toLowerCase().includes(q) ||
           c.category.toLowerCase().includes(q)
       );
     }
 
-    // difficulty
-    if (difficulty !== "All") {
-      list = list.filter((c) => c.difficulty === difficulty);
+    if (selectedDifficulty !== "All") {
+      const difficultyMapping: Record<string, string> = {
+        EASY: "Easy",
+        MEDIUM: "Medium",
+        HARD: "Hard",
+        EXPERT: "Expert",
+      };
+      const targetDiff = difficultyMapping[selectedDifficulty] || selectedDifficulty;
+      filtered = filtered.filter((c) => c.difficulty === targetDiff);
     }
 
-    // category
-    if (activeCategory) {
-      list = list.filter((c) => c.categorySlug === activeCategory);
+    if (selectedCategory !== "All") {
+      filtered = filtered.filter((c) => c.categorySlug === selectedCategory);
     }
 
-    // sort
-    list = [...list].sort((a, b) => {
-      let cmp = 0;
-      switch (sortKey) {
+    filtered.sort((a, b) => {
+      let comparison = 0;
+      switch (sortField) {
         case "title":
-          cmp = a.title.localeCompare(b.title);
+          comparison = a.title.localeCompare(b.title);
           break;
-        case "difficulty":
-          cmp =
-            (DIFFICULTY_ORDER[a.difficulty] ?? 99) -
-            (DIFFICULTY_ORDER[b.difficulty] ?? 99);
+        case "difficulty": {
+          const order: Record<string, number> = { Easy: 0, Medium: 1, Hard: 2, Expert: 3 };
+          comparison = (order[a.difficulty] ?? 0) - (order[b.difficulty] ?? 0);
           break;
-        case "category":
-          cmp = a.category.localeCompare(b.category);
-          break;
+        }
         case "acceptanceRate":
-          cmp = a.acceptanceRate - b.acceptanceRate;
+          comparison = a.acceptanceRate - b.acceptanceRate;
           break;
         case "totalSubmissions":
-          cmp = a.totalSubmissions - b.totalSubmissions;
+          comparison = a.totalSubmissions - b.totalSubmissions;
           break;
       }
-      return sortAsc ? cmp : -cmp;
+      return sortDirection === "asc" ? comparison : -comparison;
     });
 
-    return list;
-  }, [initialChallenges, search, difficulty, activeCategory, sortKey, sortAsc]);
+    return filtered;
+  }, [initialChallenges, search, selectedDifficulty, selectedCategory, sortField, sortDirection]);
 
-  const hasActiveFilters =
-    search.trim() !== "" || difficulty !== "All" || activeCategory !== "";
-
-  // -- handlers -------------------------------------------------------------
-  function handleSort(key: SortKey) {
-    if (sortKey === key) {
-      setSortAsc((prev) => !prev);
+  function handleSort(field: SortField) {
+    if (sortField === field) {
+      setSortDirection((d) => (d === "asc" ? "desc" : "asc"));
     } else {
-      setSortKey(key);
-      setSortAsc(true);
+      setSortField(field);
+      setSortDirection("asc");
     }
   }
 
-  function resetFilters() {
-    setSearch("");
-    setDifficulty("All");
-    setActiveCategory("");
-    setSortKey("title");
-    setSortAsc(true);
-  }
-
-  // -- render ---------------------------------------------------------------
   return (
-    <section className="w-full space-y-6">
-      {/* ── Search ─────────────────────────────────────────────────────── */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search challenges…"
-          className="w-full bg-[#0F172A] border border-white/[0.08] rounded-md py-2.5 pl-10 pr-4 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-emerald-500 transition-colors duration-200"
-        />
-      </div>
-
-      {/* ── Difficulty tabs ────────────────────────────────────────────── */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-        {DIFFICULTY_TABS.map((tab) => {
-          const isActive = difficulty === tab;
-          return (
-            <button
-              key={tab}
-              onClick={() => setDifficulty(tab)}
-              className={`cursor-pointer shrink-0 px-4 py-1.5 rounded-md text-xs font-mono uppercase tracking-wider transition-colors duration-150 ${
-                isActive
-                  ? tab === "All"
-                    ? "bg-emerald-500 text-slate-900 font-bold"
-                    : tab === "Easy"
-                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
-                    : tab === "Medium"
-                    ? "bg-amber-500/20 text-amber-400 border border-amber-500/40"
-                    : tab === "Hard"
-                    ? "bg-red-500/20 text-red-400 border border-red-500/40"
-                    : "bg-purple-500/20 text-purple-400 border border-purple-500/40"
-                  : "bg-[#192134] border border-white/[0.08] text-slate-400 hover:border-white/[0.14] hover:text-white"
-              }`}
-            >
-              {tab}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* ── Category strip ─────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-        <button
-          onClick={() => setActiveCategory("")}
-          className={`cursor-pointer shrink-0 px-3 py-1 rounded-md text-[10px] font-mono uppercase tracking-wider transition-colors duration-150 ${
-            activeCategory === ""
-              ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
-              : "bg-[#192134] border border-white/[0.08] text-slate-400 hover:border-white/[0.14] hover:text-white"
-          }`}
-        >
-          All Topics
-        </button>
-        {initialCategories.map((cat) => {
-          const isActive = activeCategory === cat.slug;
-          return (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.slug)}
-              className={`cursor-pointer shrink-0 px-3 py-1 rounded-md text-[10px] font-mono uppercase tracking-wider transition-colors duration-150 ${
-                isActive
-                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
-                  : "bg-[#192134] border border-white/[0.08] text-slate-400 hover:border-white/[0.14] hover:text-white"
-              }`}
-            >
-              {cat.name}
-              <span className="ml-1.5 text-slate-500">{cat.challengeCount}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* ── Results summary ────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between text-sm">
-        <p className="text-slate-400">
-          Showing{" "}
-          <span className="text-white font-medium">{filtered.length}</span>{" "}
-          {filtered.length === 1 ? "challenge" : "challenges"}
-        </p>
-        {hasActiveFilters && (
-          <button
-            onClick={resetFilters}
-            className="cursor-pointer text-emerald-400 hover:text-emerald-300 text-xs font-mono uppercase tracking-wider transition-colors duration-150"
-          >
-            Reset filters
-          </button>
-        )}
-      </div>
-
-      {/* ── Empty state ────────────────────────────────────────────────── */}
-      {filtered.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 text-center space-y-3">
-          <Terminal className="h-10 w-10 text-slate-500" />
-          <p className="text-slate-400 text-sm">
-            No challenges match your filters.
+    <div className="min-h-screen">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+        {/* Header */}
+        <div className="mb-10">
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+            Challenges
+          </h1>
+          <p className="text-slate-400 text-lg">
+            {initialChallenges.length} challenges across{" "}
+            {initialCategories.length} skill categories
           </p>
-          <button
-            onClick={resetFilters}
-            className="cursor-pointer text-emerald-400 hover:text-emerald-300 text-xs font-mono uppercase tracking-wider transition-colors duration-150"
-          >
-            Clear all filters
-          </button>
         </div>
-      )}
 
-      {/* ── Desktop table ──────────────────────────────────────────────── */}
-      {filtered.length > 0 && (
-        <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.08] text-slate-500 text-[10px] font-mono uppercase tracking-wider">
-                <th className="py-3 pr-2 text-left w-14">Status</th>
-                <th className="py-3 px-2 text-left">
-                  <button
-                    onClick={() => handleSort("title")}
-                    className="cursor-pointer inline-flex items-center gap-1 hover:text-white transition-colors duration-150"
-                  >
-                    Challenge Title
-                    <ArrowUpDown className="h-3 w-3" />
-                  </button>
-                </th>
-                <th className="py-3 px-2 text-left w-24">
-                  <button
-                    onClick={() => handleSort("difficulty")}
-                    className="cursor-pointer inline-flex items-center gap-1 hover:text-white transition-colors duration-150"
-                  >
-                    Tier
-                    <ArrowUpDown className="h-3 w-3" />
-                  </button>
-                </th>
-                <th className="py-3 px-2 text-left w-36">
-                  <button
-                    onClick={() => handleSort("category")}
-                    className="cursor-pointer inline-flex items-center gap-1 hover:text-white transition-colors duration-150"
-                  >
-                    Category
-                    <ArrowUpDown className="h-3 w-3" />
-                  </button>
-                </th>
-                <th className="py-3 px-2 text-right w-28">
-                  <button
-                    onClick={() => handleSort("acceptanceRate")}
-                    className="cursor-pointer inline-flex items-center gap-1 ml-auto hover:text-white transition-colors duration-150"
-                  >
-                    Pass Rate
-                    <ArrowUpDown className="h-3 w-3" />
-                  </button>
-                </th>
-                <th className="py-3 pl-2 text-right w-24">
-                  <button
-                    onClick={() => handleSort("totalSubmissions")}
-                    className="cursor-pointer inline-flex items-center gap-1 ml-auto hover:text-white transition-colors duration-150"
-                  >
-                    Runs
-                    <ArrowUpDown className="h-3 w-3" />
-                  </button>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((c) => (
-                <tr
-                  key={c.id}
-                  className="border-b border-white/[0.05] hover:bg-[#243044] transition-colors duration-150 group"
+        {/* Filters & Categories Toolbar */}
+        <div className="glass-card p-5 mb-8 space-y-4">
+          {/* Top Control Bar: Search & Difficulty */}
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+            {/* Search Input */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search by keyword, domain, or tag (e.g. 'Fintech', 'JSON', 'Security')..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full rounded-xl border border-white/[0.08] bg-dark-900/80 py-2.5 pl-10 pr-10 text-sm text-slate-200 placeholder:text-slate-500 focus:border-cyan-500/50 focus:bg-dark-900 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all shadow-inner"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1 text-xs"
                 >
-                  {/* Status */}
-                  <td className="py-3 pr-2">
-                    <span
-                      className={`font-mono text-xs ${
-                        c.isCompleted ? "text-emerald-400" : "text-slate-500"
-                      }`}
-                    >
-                      {c.isCompleted ? "[OK]" : "[--]"}
-                    </span>
-                  </td>
+                  ✕
+                </button>
+              )}
+            </div>
 
-                  {/* Title */}
-                  <td className="py-3 px-2">
-                    <Link
-                      href={`/challenges/${c.slug}`}
-                      className="text-white hover:text-emerald-400 transition-colors duration-150 font-medium"
-                    >
-                      {c.title}
-                    </Link>
-                    {c.isPremium && (
-                      <span className="ml-2 text-[10px] font-mono uppercase tracking-wider text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded">
-                        Pro
+            {/* Difficulty Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mr-1 hidden sm:inline">
+                Difficulty:
+              </span>
+              {difficulties.map((diff) => {
+                const isActive = selectedDifficulty === diff;
+                const colorClasses =
+                  diff === "All"
+                    ? isActive
+                      ? "bg-white/10 text-white border-white/20 shadow-sm"
+                      : "text-slate-400 border-transparent hover:text-slate-200 hover:bg-white/[0.03]"
+                    : isActive
+                    ? getDifficultyBg(diff) + " border shadow-sm"
+                    : "text-slate-400 border-transparent hover:text-slate-200 hover:bg-white/[0.03]";
+                return (
+                  <button
+                    key={diff}
+                    onClick={() => setSelectedDifficulty(diff)}
+                    className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all shrink-0 ${colorClasses}`}
+                  >
+                    {diff === "All" ? "All Tiers" : diff.charAt(0) + diff.slice(1).toLowerCase()}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Category Tabs Strip (No Scrollbar, Sleek Design) */}
+          <div className="pt-3 border-t border-white/[0.06]">
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 scroll-smooth">
+              <button
+                onClick={() => setSelectedCategory("All")}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-medium shrink-0 transition-all flex items-center gap-1.5 ${
+                  selectedCategory === "All"
+                    ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold shadow-md shadow-cyan-500/20"
+                    : "bg-white/[0.03] text-slate-400 hover:text-white hover:bg-white/[0.06] border border-white/[0.05]"
+                }`}
+              >
+                <span>All Categories</span>
+                <span className="text-[10px] opacity-75 bg-black/20 px-1.5 py-0.5 rounded-full font-mono">
+                  {initialChallenges.length}
+                </span>
+              </button>
+
+              {initialCategories.map((cat) => {
+                const isActive = selectedCategory === cat.slug;
+                const count = initialChallenges.filter(c => c.categorySlug === cat.slug).length;
+                return (
+                  <button
+                    key={cat.slug}
+                    onClick={() => setSelectedCategory(cat.slug)}
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-medium shrink-0 transition-all flex items-center gap-1.5 ${
+                      isActive
+                        ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold shadow-md shadow-cyan-500/20"
+                        : "bg-white/[0.03] text-slate-400 hover:text-white hover:bg-white/[0.06] border border-white/[0.05]"
+                    }`}
+                  >
+                    <span>{cat.name}</span>
+                    {count > 0 && (
+                      <span className="text-[10px] opacity-75 bg-black/20 px-1.5 py-0.5 rounded-full font-mono">
+                        {count}
                       </span>
                     )}
-                  </td>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-                  {/* Difficulty */}
-                  <td className="py-3 px-2">
-                    <span
-                      className={`inline-block text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded ${getDifficultyBg(
-                        c.difficulty
-                      )} ${getDifficultyText(c.difficulty)}`}
-                    >
-                      {c.difficulty}
-                    </span>
-                  </td>
+          {/* Results Summary Bar & Active Filters */}
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400 pt-2 border-t border-white/[0.04]">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-mono">
+                Showing <strong className="text-white">{filteredChallenges.length}</strong> of {initialChallenges.length} challenges
+              </span>
+              {selectedCategory !== "All" && (
+                <span className="inline-flex items-center gap-1 bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 rounded-md px-2 py-0.5 text-[11px]">
+                  Category: {initialCategories.find(c => c.slug === selectedCategory)?.name || selectedCategory}
+                  <button onClick={() => setSelectedCategory("All")} className="hover:text-white ml-0.5">✕</button>
+                </span>
+              )}
+              {selectedDifficulty !== "All" && (
+                <span className="inline-flex items-center gap-1 bg-blue-500/10 text-blue-300 border border-blue-500/20 rounded-md px-2 py-0.5 text-[11px]">
+                  Difficulty: {selectedDifficulty}
+                  <button onClick={() => setSelectedDifficulty("All")} className="hover:text-white ml-0.5">✕</button>
+                </span>
+              )}
+            </div>
 
-                  {/* Category */}
-                  <td className="py-3 px-2 text-slate-400 text-xs">
-                    {c.category}
-                  </td>
-
-                  {/* Acceptance Rate */}
-                  <td className="py-3 px-2 text-right font-mono text-slate-400 text-xs">
-                    {c.acceptanceRate.toFixed(1)}%
-                  </td>
-
-                  {/* Total Submissions */}
-                  <td className="py-3 pl-2 text-right font-mono text-slate-400 text-xs">
-                    {formatNumber(c.totalSubmissions)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            {(search || selectedDifficulty !== "All" || selectedCategory !== "All") && (
+              <button
+                onClick={() => {
+                  setSearch("");
+                  setSelectedDifficulty("All");
+                  setSelectedCategory("All");
+                }}
+                className="text-cyan-400 hover:text-cyan-300 transition-colors font-medium text-xs underline underline-offset-4"
+              >
+                Clear all filters
+              </button>
+            )}
+          </div>
         </div>
-      )}
 
-      {/* ── Mobile card view ───────────────────────────────────────────── */}
-      {filtered.length > 0 && (
-        <div className="md:hidden space-y-3">
-          {filtered.map((c) => (
-            <Link
-              key={c.id}
-              href={`/challenges/${c.slug}`}
-              className="block bg-[#192134] border border-white/[0.08] rounded-lg p-4 hover:bg-[#243044] hover:border-white/[0.14] transition-colors duration-150 cursor-pointer"
+        {/* Challenges Table */}
+        <div className="glass-card overflow-hidden">
+          {/* Table Header */}
+          <div className="hidden sm:grid grid-cols-[44px_1fr_120px_200px_120px_120px] items-center gap-4 px-6 py-3 border-b border-white/[0.06] text-xs font-medium text-slate-500 uppercase tracking-wider">
+            <div>Status</div>
+            <button
+              onClick={() => handleSort("title")}
+              className="flex items-center gap-1 hover:text-slate-300 transition-colors text-left"
             >
-              {/* Top row: status + difficulty */}
-              <div className="flex items-center justify-between mb-2">
-                <span
-                  className={`font-mono text-xs ${
-                    c.isCompleted ? "text-emerald-400" : "text-slate-500"
-                  }`}
-                >
-                  {c.isCompleted ? "[OK]" : "[--]"}
-                </span>
-                <span
-                  className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded ${getDifficultyBg(
-                    c.difficulty
-                  )} ${getDifficultyText(c.difficulty)}`}
-                >
-                  {c.difficulty}
-                </span>
-              </div>
+              Title
+              <ArrowUpDown className="h-3 w-3" />
+            </button>
+            <button
+              onClick={() => handleSort("difficulty")}
+              className="flex items-center gap-1 hover:text-slate-300 transition-colors"
+            >
+              Difficulty
+              <ArrowUpDown className="h-3 w-3" />
+            </button>
+            <div>Category</div>
+            <button
+              onClick={() => handleSort("acceptanceRate")}
+              className="flex items-center gap-1 hover:text-slate-300 transition-colors"
+            >
+              Acceptance
+              <ArrowUpDown className="h-3 w-3" />
+            </button>
+            <button
+              onClick={() => handleSort("totalSubmissions")}
+              className="flex items-center gap-1 hover:text-slate-300 transition-colors"
+            >
+              Submissions
+              <ArrowUpDown className="h-3 w-3" />
+            </button>
+          </div>
 
-              {/* Title */}
-              <h3 className="text-white font-medium text-sm mb-1">
-                {c.title}
-                {c.isPremium && (
-                  <span className="ml-2 text-[10px] font-mono uppercase tracking-wider text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded">
-                    Pro
-                  </span>
-                )}
-              </h3>
+          {/* Table Rows */}
+          {filteredChallenges.length === 0 ? (
+            <div className="text-center py-16 text-slate-500">
+              No challenges found matching your filters.
+            </div>
+          ) : (
+            filteredChallenges.map((challenge, idx) => (
+              <Link
+                key={challenge.id}
+                href={`/challenges/${challenge.slug}`}
+                className={`group grid grid-cols-1 sm:grid-cols-[44px_1fr_120px_200px_120px_120px] items-center gap-4 px-6 py-4 border-b border-white/[0.04] transition-all duration-200 hover:bg-white/[0.04] hover:border-cyan-500/30 ${
+                  idx % 2 === 0 ? "bg-transparent" : "bg-white/[0.01]"
+                }`}
+              >
+                {/* Status */}
+                <div className="hidden sm:block">
+                  {challenge.isCompleted ? (
+                    <CheckCircle2 className="h-4.5 w-4.5 text-emerald-400" />
+                  ) : challenge.isPremium ? (
+                    <Lock className="h-4 w-4 text-amber-500" />
+                  ) : (
+                    <div className="h-4 w-4 rounded-full border border-white/[0.1]" />
+                  )}
+                </div>
 
-              {/* Category */}
-              <p className="text-slate-500 text-xs mb-3">{c.category}</p>
+                {/* Title */}
+                <div>
+                  <span className="text-sm font-medium text-slate-200 group-hover:text-white">
+                    {challenge.title}
+                  </span>
+                </div>
 
-              {/* Stats row */}
-              <div className="flex items-center gap-4 text-xs font-mono text-slate-400">
-                <span>
-                  Pass{" "}
-                  <span className="text-white">
-                    {c.acceptanceRate.toFixed(1)}%
+                {/* Difficulty */}
+                <div>
+                  <span
+                    className={`inline-flex rounded-md border px-2.5 py-0.5 text-xs font-medium ${getDifficultyBg(
+                      challenge.difficulty
+                    )}`}
+                  >
+                    {challenge.difficulty}
                   </span>
-                </span>
-                <span>
-                  Runs{" "}
-                  <span className="text-white">
-                    {formatNumber(c.totalSubmissions)}
+                </div>
+
+                {/* Category */}
+                <div>
+                  <span className="text-xs text-slate-400 bg-white/[0.04] rounded-md px-2 py-1">
+                    {challenge.category}
                   </span>
-                </span>
-              </div>
-            </Link>
-          ))}
+                </div>
+
+                {/* Acceptance Rate */}
+                <div className="text-sm text-slate-400">
+                  {challenge.totalSubmissions > 0 ? `${challenge.acceptanceRate}%` : "New"}
+                </div>
+
+                {/* Submissions */}
+                <div className="text-sm text-slate-400 font-mono">
+                  {challenge.totalSubmissions > 0 ? formatNumber(challenge.totalSubmissions) : "0"}
+                </div>
+              </Link>
+            ))
+          )}
         </div>
-      )}
-    </section>
+      </div>
+    </div>
   );
 }

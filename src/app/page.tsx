@@ -11,14 +11,13 @@ import {
   MessageSquare,
   ArrowRight,
   CheckCircle2,
+  Sparkles,
   BarChart3,
   Layers,
   Award,
   Code,
   UserCheck,
   CheckSquare,
-  Cpu,
-  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { getChallenges, getCategories } from "@/lib/queries";
@@ -40,48 +39,55 @@ const iconMap: Record<string, LucideIcon> = {
   CheckSquare,
 };
 
+
 const steps = [
   {
     number: "01",
-    title: "Draft Prompt Templates",
+    title: "Write Your Prompt",
     description:
-      "Craft deterministic prompt architectures with variables, system constraints, and strict output boundaries.",
-    icon: Code,
+      "Tackle real-world prompt engineering challenges. Craft your solution in our editor with syntax highlighting and variable support.",
+    icon: Sparkles,
+    color: "#22d3ee",
   },
   {
     number: "02",
-    title: "Parallel Multi-Model Testing",
+    title: "AI Grades It",
     description:
-      "Simultaneously dispatch to Meta Llama 3.3 70B and Google Gemini 2.0 Flash to observe token variance and latency drift.",
-    icon: Cpu,
+      "Your prompt is tested against multiple LLMs. An AI judge scores it on a structured rubric — not vibes, real criteria.",
+    icon: BarChart3,
+    color: "#a78bfa",
   },
   {
     number: "03",
-    title: "Automated Rubric Scorecards",
+    title: "Level Up",
     description:
-      "Rigorous judge engines score RFC schema compliance, token budgets, safety guardrails, and reasoning fidelity.",
-    icon: BarChart3,
+      "See per-criterion breakdowns, cross-model comparisons, and track your progress with streaks and badges.",
+    icon: Layers,
+    color: "#34d399",
   },
 ];
 
 const features = [
   {
-    tag: "DETERMINISTIC EVALUATION",
-    title: "Multi-Criteria Rubric Scoring",
+    title: "Rubric-Based Grading",
     description:
-      "Zero vibes-based grading. Submissions are scored against strict schema parsing, token budgets, and edge-case reasoning.",
+      "Every challenge has a structured rubric with weighted criteria. Get scored on each dimension — not just a vague pass/fail.",
+    icon: CheckCircle2,
+    gradient: "from-emerald-500 to-cyan-500",
   },
   {
-    tag: "CROSS-MODEL BENCHMARK",
-    title: "Foundation Model Verification",
+    title: "Cross-Model Testing",
     description:
-      "Test against Meta Llama 3.3 70B and Google Gemini 2.0 Flash in real-time. Catch vendor-specific regressions before production.",
+      "Run your prompt against Claude, GPT-4o, and Gemini. See where your prompt generalizes and where it's model-specific.",
+    icon: Layers,
+    gradient: "from-purple-500 to-pink-500",
   },
   {
-    tag: "PORTFOLIO METRICS",
-    title: "Verifiable Engineering Portfolio",
+    title: "Score History & Streaks",
     description:
-      "Build a verifiable record of solved specifications, benchmark percentiles, and streak consistency for engineering teams.",
+      "Track your improvement over time. Build daily streaks, earn badges, and share your profile as hiring signal.",
+    icon: BarChart3,
+    gradient: "from-amber-500 to-orange-500",
   },
 ];
 
@@ -90,143 +96,103 @@ export default async function HomePage() {
     getChallenges(),
     getCategories(),
   ]);
-
   return (
-    <div className="relative bg-[#0F172A] text-slate-50">
-      {/* ── Hero Section ───────────────────────────────────── */}
-      <section className="hero-glow relative overflow-hidden pt-20 pb-24 sm:pt-28 sm:pb-32 border-b border-white/[0.08]">
-        <div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto">
-            {/* Emerald Pill Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-semibold text-emerald-400 mb-8">
-              <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-              <span>PromptSesh 2.0 // Dual Foundation LLMs Active</span>
+    <div className="relative">
+      {/* ── Hero Section ─────────────────────────────────── */}
+      <section className="relative overflow-hidden">
+        {/* Background effects */}
+        <div className="absolute inset-0 grid-bg" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px] animate-pulse-slow" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[120px] animate-pulse-slow" />
+
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-24 pb-20 sm:pt-32 sm:pb-28">
+          <div className="text-center max-w-4xl mx-auto">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-1.5 text-xs font-medium text-slate-400 mb-8 backdrop-blur-sm">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Now in Public Beta — Start practicing for free
             </div>
 
-            {/* Heading with accent-gradient */}
-            <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-white leading-[1.12] mb-6">
-              Master{" "}
-              <span className="accent-gradient">Prompt Engineering</span>{" "}
-              with Empirical Precision.
+            {/* Headline */}
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6">
+              <span className="text-white">Master </span>
+              <span className="gradient-text">Prompt Engineering</span>
             </h1>
 
             {/* Subtitle */}
-            <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed mb-10">
-              The modern practice workbench for LLM engineers. Solve
-              deterministic challenges, test across Llama 3.3 70B &amp; Gemini
-              2.0 Flash, and inspect rubric scorecards.
+            <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed mb-10">
+              Solve challenges. Get AI-graded feedback on a structured rubric.
+              Test across multiple LLMs. Prove your skills — like LeetCode, but
+              for the age of AI.
             </p>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-14">
+            {/* CTAs */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
               <Link
                 href="/challenges"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-md bg-emerald-500 hover:bg-emerald-400 text-slate-900 px-5 py-2.5 text-xs font-bold cursor-pointer transition-all duration-200"
+                className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-3.5 text-base font-semibold text-white shadow-xl shadow-cyan-500/25 transition-all hover:shadow-cyan-500/40 hover:brightness-110"
               >
-                Explore Challenges
-                <ArrowRight className="h-3.5 w-3.5" />
+                Start Practicing
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link
-                href="/interview-simulator"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-md bg-[#192134] border border-white/[0.08] text-white hover:border-emerald-500/40 px-5 py-2.5 text-xs font-semibold cursor-pointer transition-all duration-200"
+                href="/challenges"
+                className="inline-flex items-center gap-2 rounded-xl border border-white/[0.1] bg-white/[0.03] px-8 py-3.5 text-base font-medium text-slate-300 transition-all hover:bg-white/[0.06] hover:text-white backdrop-blur-sm"
               >
-                Technical Interview Simulator
+                Browse Challenges
               </Link>
             </div>
 
-            {/* Stats Strip */}
-            <div className="grid grid-cols-3 gap-3 max-w-lg mx-auto rounded-lg border border-white/[0.08] bg-[#192134] p-3">
-              <div className="text-center border-r border-white/[0.08] pr-2">
-                <div className="text-xl sm:text-2xl font-bold text-white">
-                  {challenges.length}+
+            {/* Stats */}
+            <div className="flex items-center justify-center gap-8 sm:gap-16">
+              {[
+                { label: "Prompt Challenges", value: `${challenges.length}+` },
+                { label: "Skill Categories", value: `${categories.length}` },
+                { label: "Rubric Evals", value: "Multi-Model" },
+              ].map((stat) => (
+                <div key={stat.label} className="text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-white">
+                    {stat.value}
+                  </div>
+                  <div className="text-xs sm:text-sm text-slate-500 mt-1">
+                    {stat.label}
+                  </div>
                 </div>
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-mono">
-                  CHALLENGES
-                </div>
-              </div>
-              <div className="text-center border-r border-white/[0.08] px-2">
-                <div className="text-xl sm:text-2xl font-bold text-emerald-400">
-                  {categories.length}
-                </div>
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-mono">
-                  TRACKS
-                </div>
-              </div>
-              <div className="text-center pl-2">
-                <div className="text-xl sm:text-2xl font-bold text-blue-400">
-                  2 FREE
-                </div>
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-mono">
-                  MODELS
-                </div>
-              </div>
+              ))}
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Specimen Box ───────────────────────────────────── */}
-      <section className="relative -mt-10 z-10 pb-16 border-b border-white/[0.08]">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-lg border border-white/[0.08] bg-[#192134] p-5 sm:p-6 shadow-2xl">
-            {/* Specimen Header */}
-            <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-white/[0.08] text-xs">
-              <div className="flex items-center gap-2 text-slate-400 font-mono">
-                <span className="text-emerald-400 font-semibold">&gt;</span>
-                <span>specimen // invoice_parser_spec.ts</span>
-              </div>
-              <div className="flex items-center gap-2 font-mono">
-                <span className="rounded bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 px-2 py-0.5 text-[10px] font-bold">
-                  Score: 100/100
-                </span>
-                <span className="text-slate-500 text-[10px] hidden sm:inline">
-                  142ms // Gemini 2.0 Flash
-                </span>
-              </div>
-            </div>
-
-            {/* Specimen Body */}
-            <div className="space-y-3 text-xs leading-relaxed text-slate-50 font-mono">
-              <div className="bg-[#0B1120] p-3 rounded-md border border-white/[0.08]">
-                <span className="text-emerald-400 font-medium">
-                  SYSTEM &gt;
-                </span>{" "}
-                You are a production data parser. Extract transactions strictly
-                adhering to RFC-8259 JSON format with zero conversational filler.
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 font-sans">
-                <div className="rounded-md border border-white/[0.08] bg-[#0F172A] p-3">
-                  <div className="text-[10px] font-mono text-slate-400 uppercase font-semibold">
-                    Schema Compliance
-                  </div>
-                  <div className="font-bold text-sm text-white mt-0.5">
-                    100% Valid
-                  </div>
-                  <div className="text-[10px] text-slate-500 mt-0.5">
-                    Strict RFC parser confirmed
-                  </div>
+            {/* Terminal Showcase Card */}
+            <div className="mt-16 mx-auto max-w-4xl text-left glass-card p-6 sm:p-8 relative overflow-hidden border border-cyan-500/20 shadow-2xl shadow-cyan-500/10 glow-cyan animate-float">
+              {/* Window Header */}
+              <div className="flex items-center justify-between pb-4 mb-4 border-b border-white/[0.08]">
+                <div className="flex items-center gap-2">
+                  <div className="h-3 w-3 rounded-full bg-rose-500/80" />
+                  <div className="h-3 w-3 rounded-full bg-amber-500/80" />
+                  <div className="h-3 w-3 rounded-full bg-emerald-500/80" />
+                  <span className="ml-2 font-mono text-xs text-slate-400">workspace / prompt_engineering.ps</span>
                 </div>
-                <div className="rounded-md border border-white/[0.08] bg-[#0F172A] p-3">
-                  <div className="text-[10px] font-mono text-slate-400 uppercase font-semibold">
-                    Boundary Defense
-                  </div>
-                  <div className="font-bold text-sm text-white mt-0.5">
-                    100% Invariance
-                  </div>
-                  <div className="text-[10px] text-slate-500 mt-0.5">
-                    Zero injection leakage
-                  </div>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-[11px] font-medium text-emerald-400">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Passed 100%
+                  </span>
+                  <span className="text-xs font-mono text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-0.5 rounded-md">
+                    Gemini 2.5 Flash
+                  </span>
                 </div>
-                <div className="rounded-md border border-emerald-500/40 bg-[#0F172A] p-3">
-                  <div className="text-[10px] font-mono text-emerald-400 uppercase font-semibold">
-                    Token Efficiency
-                  </div>
-                  <div className="font-bold text-sm text-emerald-400 mt-0.5">
-                    96% Optimal
-                  </div>
-                  <div className="text-[10px] text-slate-500 mt-0.5">
-                    240 token budget
+              </div>
+
+              {/* Terminal Code Snippet */}
+              <div className="font-mono text-xs sm:text-sm space-y-2 leading-relaxed text-slate-300">
+                <div className="text-purple-400 font-semibold">// Task: Zero-Shot Structured JSON Extractor</div>
+                <div className="text-slate-400">
+                  <span className="text-cyan-400">SYSTEM:</span> You are a production data parser. You MUST output strict RFC-8259 compliant JSON with zero markdown or conversational filler.
+                </div>
+                <div className="bg-dark-900/80 p-3 rounded-lg border border-white/[0.06] text-emerald-300">
+                  <span className="text-slate-500">// Rubric Evaluation Output</span>
+                  <div className="flex flex-wrap gap-2 mt-1.5">
+                    <span className="bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded text-[11px]">JSON Schema Compliance: 100%</span>
+                    <span className="bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded text-[11px]">Zero-Shot Accuracy: 98%</span>
+                    <span className="bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded text-[11px]">Latency: 312ms</span>
                   </div>
                 </div>
               </div>
@@ -235,53 +201,51 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Skill Categories Grid ──────────────────────────── */}
-      <section className="py-16 border-b border-white/[0.08] bg-[#0F172A]">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 pb-4 border-b border-white/[0.08] gap-2">
-            <div>
-              <div className="text-[11px] font-mono font-semibold text-emerald-400 uppercase tracking-wider mb-1">
-                CURRICULUM
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-white">
-                Skill Tracks &amp; Disciplines
-              </h2>
-            </div>
-            <p className="text-xs text-slate-400 max-w-sm">
-              Structured engineering tracks categorized by production
-              requirements.
+      {/* ── Categories Grid ──────────────────────────────── */}
+      <section className="py-24 relative">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              {categories.length} Skill Categories
+            </h2>
+            <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+              Organized by real prompt engineering skills — not just difficulty.
+              Master each domain to become a complete practitioner.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {categories.map((cat: any) => {
               const Icon = iconMap[cat.icon] || Zap;
               return (
                 <Link
                   key={cat.id}
                   href={`/challenges?category=${cat.slug}`}
-                  className="p-4 rounded-lg border border-white/[0.08] bg-[#192134] hover:bg-[#243044] hover:border-white/[0.14] transition-all duration-200 group block cursor-pointer"
+                  className="glass-card-hover p-6 group"
                 >
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-white/[0.08] bg-[#0F172A] text-emerald-400 group-hover:border-emerald-500/40 group-hover:text-emerald-300 transition-colors duration-200">
-                      <Icon className="h-4 w-4" />
+                  <div className="flex items-start gap-4">
+                    <div
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+                      style={{
+                        backgroundColor: `${cat.color}15`,
+                        color: cat.color,
+                      }}
+                    >
+                      <Icon className="h-5 w-5" />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-1 mb-1">
-                        <span className="text-xs font-bold text-white group-hover:text-emerald-400 truncate transition-colors duration-200">
-                          {cat.name}
-                        </span>
-                        <span className="text-[10px] text-slate-400 border border-white/[0.08] bg-[#0F172A] px-1.5 py-0.5 rounded shrink-0 font-mono">
-                          {cat.challengeCount} Labs
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed mb-2">
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-semibold text-white mb-1 group-hover:text-cyan-300 transition-colors">
+                        {cat.name}
+                      </h3>
+                      <p className="text-xs text-slate-500 leading-relaxed mb-3">
                         {cat.description}
                       </p>
-                      <div className="text-[10px] font-semibold text-emerald-400 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform duration-200">
-                        Explore Track
-                        <ArrowRight className="h-3 w-3" />
-                      </div>
+                      <span
+                        className="text-xs font-medium inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform"
+                        style={{ color: cat.color }}
+                      >
+                        {cat.challengeCount} challenges →
+                      </span>
                     </div>
                   </div>
                 </Link>
@@ -291,34 +255,43 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Workflow Steps ──────────────────────────────────── */}
-      <section className="py-16 border-b border-white/[0.08] bg-[#1E293B]">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <div className="text-[11px] font-mono font-semibold text-emerald-400 uppercase tracking-wider mb-1">
-              PIPELINE
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white">
-              Evaluation Methodology
+      {/* ── How It Works ─────────────────────────────────── */}
+      <section className="py-24 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-dark-800/50 to-transparent" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              How It Works
             </h2>
+            <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+              Three steps to level up your prompt engineering skills.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {steps.map((step) => (
-              <div
-                key={step.number}
-                className="p-5 rounded-lg border border-white/[0.08] bg-[#192134]"
-              >
-                <div className="flex items-center justify-between mb-3 border-b border-white/[0.08] pb-2 text-xs">
-                  <span className="font-mono text-xs font-bold text-emerald-400">
-                    STAGE {step.number}
-                  </span>
-                  <step.icon className="h-4 w-4 text-slate-400" />
+              <div key={step.number} className="glass-card-hover p-6 text-center">
+                {/* Step Number */}
+                <div
+                  className="text-6xl font-black mb-6"
+                  style={{ color: `${step.color}20` }}
+                >
+                  {step.number}
                 </div>
-                <h3 className="text-xs font-bold text-white mb-1.5">
+                {/* Icon */}
+                <div
+                  className="inline-flex h-14 w-14 items-center justify-center rounded-2xl mb-5 shadow-lg"
+                  style={{
+                    backgroundColor: `${step.color}15`,
+                    color: step.color,
+                  }}
+                >
+                  <step.icon className="h-7 w-7" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3">
                   {step.title}
                 </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
+                <p className="text-sm text-slate-400 leading-relaxed max-w-xs mx-auto">
                   {step.description}
                 </p>
               </div>
@@ -327,60 +300,69 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Features ───────────────────────────────────────── */}
-      <section className="py-16 border-b border-white/[0.08] bg-[#0F172A]">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <div className="text-[11px] font-mono font-semibold text-emerald-400 uppercase tracking-wider mb-1">
-              ARCHITECTURE
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white">
-              Built for Engineering Rigor
+      {/* ── Features ─────────────────────────────────────── */}
+      <section className="py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              Built Different
             </h2>
+            <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+              Not just another AI playground. PromptSesh has real grading, real
+              rubrics, and real career signal.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="p-5 rounded-lg border border-white/[0.08] bg-[#192134]"
+                className="glass-card-hover p-8 relative overflow-hidden group"
               >
-                <div className="text-[10px] font-mono font-bold text-emerald-400 mb-2 uppercase tracking-wider">
-                  {feature.tag}
+                {/* Gradient glow */}
+                <div
+                  className={`absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br ${feature.gradient} rounded-full opacity-10 blur-3xl group-hover:opacity-20 transition-opacity`}
+                />
+                <div className="relative">
+                  <div
+                    className={`inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${feature.gradient} mb-6 shadow-lg`}
+                  >
+                    <feature.icon className="h-6 w-6 text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-white mb-3">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm text-slate-400 leading-relaxed">
+                    {feature.description}
+                  </p>
                 </div>
-                <h3 className="text-xs font-bold text-white mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  {feature.description}
-                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Bottom CTA ─────────────────────────────────────── */}
-      <section className="py-16 bg-[#0F172A]">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
-          <div className="rounded-lg border border-emerald-500/40 bg-[#192134] p-8 sm:p-10">
-            <div className="text-[11px] font-mono font-bold text-emerald-400 mb-2 uppercase tracking-wider">
-              [BENCHMARK COMMISSION]
+      {/* ── CTA Section ──────────────────────────────────── */}
+      <section className="py-24">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <div className="gradient-border p-12 sm:p-16 text-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-purple-500/5 to-pink-500/5" />
+            <div className="relative">
+              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+                Ready to level up?
+              </h2>
+              <p className="text-lg text-slate-400 mb-8 max-w-lg mx-auto">
+                Start mastering prompt engineering today. Begin
+                with Easy challenges and work your way to Expert.
+              </p>
+              <Link
+                href="/challenges"
+                className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-3.5 text-base font-semibold text-white shadow-xl shadow-cyan-500/25 transition-all hover:shadow-cyan-500/40 hover:brightness-110"
+              >
+                Start Practicing Now
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white mb-3">
-              Ready to verify your prompt engineering skills?
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-400 mb-6 max-w-md mx-auto leading-relaxed">
-              Start practicing now with Level 1 challenges and advance through
-              expert multi-model reasoning and jailbreak defense.
-            </p>
-            <Link
-              href="/challenges"
-              className="inline-flex items-center gap-2 rounded-md bg-emerald-500 hover:bg-emerald-400 text-slate-900 px-6 py-2.5 text-xs font-bold cursor-pointer transition-all duration-200"
-            >
-              Start Practicing
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
           </div>
         </div>
       </section>
