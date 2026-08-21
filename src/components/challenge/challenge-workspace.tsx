@@ -28,10 +28,10 @@ import type { MockChallenge } from "@/lib/mock-data";
 import { generateSolutionFramework } from "@/lib/scraper";
 
 const models = [
-  { id: "llama-3.3-70b", name: "Llama 3.3 70B (Free)", provider: "Meta / OpenRouter", color: "#0081fb" },
-  { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash (Free)", provider: "Google / OpenRouter", color: "#4285f4" },
-  { id: "gpt4", name: "GPT-4o", provider: "OpenAI", color: "#74aa9c" },
-  { id: "claude", name: "Claude 3.5 Sonnet", provider: "Anthropic", color: "#d4a574" },
+  { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash", provider: "Google", color: "#22d3ee" },
+  { id: "llama-3.3-70b", name: "Llama 3.3 70B", provider: "Meta / OpenRouter", color: "#a78bfa" },
+  { id: "glm-5.2", name: "GLM 5.2", provider: "Z.ai / OpenRouter", color: "#34d399" },
+  { id: "kimi-k2.6", name: "Kimi K2.6", provider: "Moonshot / OpenRouter", color: "#f472b6" },
 ];
 
 export function ChallengeWorkspace({
@@ -292,23 +292,31 @@ export function ChallengeWorkspace({
                 </div>
 
                 {/* Constraints */}
-                {challenge.constraints && challenge.constraints.length > 0 && (
-                  <div className="mt-6">
-                    <h3 className="text-sm font-semibold text-white mb-2">
-                      Constraints
-                    </h3>
-                    <div className="space-y-1.5">
-                      {challenge.constraints.map((c, i) => (
-                        <div
-                          key={i}
-                          className="text-xs text-slate-400 bg-amber-500/5 border border-amber-500/10 rounded-lg p-3"
-                        >
-                          {c}
-                        </div>
-                      ))}
+                {(() => {
+                  const safeConstraints = Array.isArray(challenge.constraints)
+                    ? challenge.constraints
+                    : typeof challenge.constraints === "string"
+                    ? [challenge.constraints]
+                    : [];
+                  if (safeConstraints.length === 0) return null;
+                  return (
+                    <div className="mt-6">
+                      <h3 className="text-sm font-semibold text-white mb-2">
+                        Constraints
+                      </h3>
+                      <div className="space-y-1.5">
+                        {safeConstraints.map((c, i) => (
+                          <div
+                            key={i}
+                            className="text-xs text-slate-400 bg-amber-500/5 border border-amber-500/10 rounded-lg p-3"
+                          >
+                            {c}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* Hints */}
                 {challenge.hints && challenge.hints.length > 0 && (

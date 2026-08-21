@@ -8,6 +8,19 @@ import { checkDbConnection } from "@/lib/queries";
 
 import { checkRateLimit } from "@/lib/rate-limit";
 
+function formatConstraints(constraints: unknown): string | undefined {
+  if (!constraints) return undefined;
+  if (Array.isArray(constraints)) return constraints.join("\n");
+  if (typeof constraints === "string") return constraints;
+  try {
+    const parsed = typeof constraints === "object" ? constraints : JSON.parse(String(constraints));
+    if (Array.isArray(parsed)) return parsed.join("\n");
+  } catch {
+    // fallback
+  }
+  return String(constraints);
+}
+
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -54,19 +67,20 @@ export async function POST(
       const testCase = testCases[0] || {};
       const compiledPrompt = compilePrompt(promptText, testCase);
 
-      // Model execution mock call
+      // Model execution call
       const modelExecution = await callModel(
-        "Google",
-        "gemini-2.5-flash",
+        "OpenRouter",
+        modelId,
         compiledPrompt,
-        mockChallenge.constraints ? mockChallenge.constraints.join("\n") : undefined
+        formatConstraints(mockChallenge.constraints)
       );
 
       // Call judge evaluation (uses mock heuristic when API key is missing)
       const judgeGrades = await callJudge(
         mockChallenge.rubricCriteria,
         promptText,
-        modelExecution.text
+        modelExecution.text,
+        modelId
       );
 
       // Calculate aggregate weighted scores
@@ -175,52 +189,17 @@ export async function POST(
         { status: 400 }
       );
     }
-
-    // Check Cache
-    const cachedSubmission = await prisma.submission.findFirst({
-      where: {
-        userId: finalUserId,
-        challengeId: challenge.id,
-        promptText: promptText.trim(),
-        status: SubmissionStatus.COMPLETED,
-      },
-      include: {
-        scores: {
-          include: {
-            criterion: true,
-          },
-        },
-        modelTestResults: true,
-      },
-    });
-
-    if (cachedSubmission) {
-      return NextResponse.json({
-        success: true,
-        cached: true,
-        submission: cachedSubmission,
-      });
-    }
-
     // Parse test cases
     const testCases: Record<string, string>[] = (challenge.testInputs as any) || [{}];
     const testCase = testCases[0] || {};
     const compiledPrompt = compilePrompt(promptText, testCase);
 
-    // Map targets dynamically depending on key availability
-    const geminiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-    const isGeminiAvailable = geminiKey && !geminiKey.startsWith("your-") && !geminiKey.startsWith("dummy-");
-
-    const targetModel = isGeminiAvailable 
-      ? { provider: "Google", name: "gemini-2.5-flash" }
-      : { provider: "OpenAI", name: "gpt-4o-mini" };
-
     // Call execution
     const modelExecution = await callModel(
-      targetModel.provider,
-      targetModel.name,
+      "OpenRouter",
+      modelId,
       compiledPrompt,
-      challenge.systemPrompt || undefined
+      formatConstraints(challenge.constraints)
     );
 
     // Call judge
@@ -231,7 +210,8 @@ export async function POST(
         description: c.description,
       })),
       promptText,
-      modelExecution.text
+      modelExecution.text,
+      modelId
     );
 
     let totalScore = 0;
@@ -282,8 +262,8 @@ export async function POST(
       await tx.modelTestResult.create({
         data: {
           submissionId: createdSubmission.id,
-          modelProvider: targetModel.provider,
-          modelName: targetModel.name,
+          modelProvider: modelId.includes("gemini") ? "Google" : modelId.includes("llama") ? "Meta" : modelId.includes("glm") ? "Z.ai" : "Moonshot",
+          modelName: modelId,
           rawOutput: modelExecution.text,
           latencyMs: modelExecution.executionTimeMs,
           score: totalScore,

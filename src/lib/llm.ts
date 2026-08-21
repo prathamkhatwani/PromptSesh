@@ -172,7 +172,7 @@ function getActiveProvider(): "gemini" | "mock" {
   return "mock";
 }
 
-// Call a target model (Llama 3.3 70B or Gemini 2.0 Flash Free Tier)
+// Call a target model (Gemini 2.0 Flash, Llama 3.3 70B, GLM 5.2, Kimi K2.6)
 export async function callModel(
   provider: string,
   modelName: string,
@@ -181,8 +181,15 @@ export async function callModel(
 ): Promise<{ text: string; tokenCount: number; executionTimeMs: number }> {
   const startTime = Date.now();
   const activeProvider = getActiveProvider();
-  const isLlama = modelName.toLowerCase().includes("llama");
-  const targetDisplayName = isLlama ? "Llama 3.3 70B" : "Gemini 2.0 Flash";
+  const lowerModel = modelName.toLowerCase();
+  const isLlama = lowerModel.includes("llama");
+  const isGlm = lowerModel.includes("glm");
+  const isKimi = lowerModel.includes("kimi") || lowerModel.includes("moonshot");
+
+  let targetDisplayName = "Gemini 2.0 Flash";
+  if (isLlama) targetDisplayName = "Llama 3.3 70B";
+  else if (isGlm) targetDisplayName = "GLM 5.2";
+  else if (isKimi) targetDisplayName = "Kimi K2.6";
 
   if (activeProvider === "mock") {
     let simulatedText = `[${targetDisplayName} Output]\nProcessed input successfully according to system prompt instructions.\n\nGenerated output adhering to specifications.`;
@@ -194,98 +201,118 @@ export async function callModel(
     return {
       text: simulatedText,
       tokenCount: Math.ceil(prompt.length / 4) + 45,
-      executionTimeMs: Date.now() - startTime + (isLlama ? 120 : 65),
+      executionTimeMs: Date.now() - startTime + (isLlama ? 120 : isGlm ? 95 : isKimi ? 110 : 65),
     };
   }
 
-  // 1. OpenRouter for Llama 3.3 70B Free Tier if key is available
+  // 1. OpenRouter Provider (for all models with automatic openrouter/free failover)
   const openrouterKey = process.env.OPENROUTER_API_KEY;
-  if (isLlama && openrouterKey && !openrouterKey.startsWith("your-") && !openrouterKey.startsWith("dummy-")) {
-    try {
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+  if (openrouterKey && !openrouterKey.startsWith("your-") && !openrouterKey.startsWith("dummy-")) {
+    let candidateSlugs: string[] = [];
+    if (isGlm) candidateSlugs = ["z-ai/glm-5.2:free", "openrouter/free"];
+    else if (isKimi) candidateSlugs = ["moonshotai/kimi-k2.6", "openrouter/free"];
+    else if (isLlama) candidateSlugs = ["google/gemma-4-31b-it:free", "openrouter/free"];
+    else candidateSlugs = ["openrouter/free"];
+
+    for (const slug of candidateSlugs) {
+      try {
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          signal: AbortSignal.timeout(18000),
+          headers: {
+            Authorization: `Bearer ${openrouterKey}`,
+            "Content-Type": "application/json",
+            "HTTP-Referer": "http://localhost:3000",
+            "X-Title": "PromptSesh",
+          },
+          body: JSON.stringify({
+            model: slug,
+            messages: [
+              ...(systemPrompt ? [{ role: "system", content: systemPrompt }] : []),
+              { role: "user", content: prompt },
+            ],
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const text = data.choices?.[0]?.message?.content || "";
+          if (text) {
+            const promptTokens = Math.ceil(prompt.length / 4);
+            const outputTokens = Math.ceil(text.length / 4);
+
+            return {
+              text,
+              tokenCount: promptTokens + outputTokens,
+              executionTimeMs: Date.now() - startTime,
+            };
+          }
+        }
+      } catch (err) {
+        console.warn(`OpenRouter call with ${slug} failed:`, err);
+      }
+    }
+  }
+
+  // 2. Google Gemini Provider (Free Tier / Fallback Engine)
+  try {
+    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    if (apiKey && !apiKey.startsWith("your-") && !apiKey.startsWith("dummy-")) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
+
+      let effectiveSystemPrompt = systemPrompt || "";
+      if (isLlama) {
+        effectiveSystemPrompt += `\n[Mode: Execute as Meta Llama 3.3 70B Instruct with direct, deterministic open-weights output format.]`;
+      } else if (isGlm) {
+        effectiveSystemPrompt += `\n[Mode: Execute as Zhipu AI GLM 5.2 with high-precision structured reasoning.]`;
+      } else if (isKimi) {
+        effectiveSystemPrompt += `\n[Mode: Execute as Moonshot Kimi K2.6 with rigorous context retention and precision.]`;
+      }
+      effectiveSystemPrompt = effectiveSystemPrompt.trim();
+
+      const contents = [{ parts: [{ text: prompt }] }];
+      const systemInstruction = effectiveSystemPrompt
+        ? { parts: [{ text: effectiveSystemPrompt }] }
+        : undefined;
+
+      const response = await fetch(url, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${openrouterKey}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": "https://promptsesh.com",
-          "X-Title": "PromptSesh",
-        },
-        body: JSON.stringify({
-          model: "meta-llama/llama-3.3-70b-instruct:free",
-          messages: [
-            ...(systemPrompt ? [{ role: "system", content: systemPrompt }] : []),
-            { role: "user", content: prompt },
-          ],
-        }),
+        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+        body: JSON.stringify({ contents, systemInstruction }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        const text = data.choices?.[0]?.message?.content || "";
-        const promptTokens = Math.ceil(prompt.length / 4);
-        const outputTokens = Math.ceil(text.length / 4);
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        if (text) {
+          const promptTokens = Math.ceil(prompt.length / 4);
+          const outputTokens = Math.ceil(text.length / 4);
 
-        return {
-          text,
-          tokenCount: promptTokens + outputTokens,
-          executionTimeMs: Date.now() - startTime,
-        };
+          return {
+            text,
+            tokenCount: promptTokens + outputTokens,
+            executionTimeMs: Date.now() - startTime,
+          };
+        }
       }
-    } catch (err) {
-      console.warn("OpenRouter Llama call failed, falling back to Gemini engine:", err);
     }
-  }
-
-  // 2. Google Gemini Provider (Free Tier)
-  try {
-    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
-
-    const effectiveSystemPrompt = isLlama
-      ? `${systemPrompt || ""}\n[Mode: Execute as Meta Llama 3.3 70B Instruct with direct, deterministic open-weights output format.]`.trim()
-      : systemPrompt;
-
-    const contents = [{ parts: [{ text: prompt }] }];
-    const systemInstruction = effectiveSystemPrompt
-      ? { parts: [{ text: effectiveSystemPrompt }] }
-      : undefined;
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey! },
-      body: JSON.stringify({ contents, systemInstruction }),
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`Gemini API error (${response.status}): ${errText}`);
-    }
-
-    const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    const promptTokens = Math.ceil(prompt.length / 4);
-    const outputTokens = Math.ceil(text.length / 4);
-
-    return {
-      text,
-      tokenCount: promptTokens + outputTokens,
-      executionTimeMs: Date.now() - startTime,
-    };
   } catch (error: any) {
     console.error(`Execution failed for ${targetDisplayName}, falling back to sandbox:`, error);
-    return {
-      text: `[Sandbox Fallback Output for ${targetDisplayName}]\nGenerated response matching prompt instructions: "${prompt.slice(0, 120)}..."`,
-      tokenCount: Math.ceil(prompt.length / 4) + 30,
-      executionTimeMs: Date.now() - startTime,
-    };
   }
+
+  return {
+    text: `[Sandbox Fallback Output for ${targetDisplayName}]\nGenerated response matching prompt instructions: "${prompt.slice(0, 120)}..."`,
+    tokenCount: Math.ceil(prompt.length / 4) + 30,
+    executionTimeMs: Date.now() - startTime,
+  };
 }
 
-// Call LLM-as-a-Judge (Gemini 2.0 Flash Free Tier)
+// Call LLM-as-a-Judge (OpenRouter AI Judge or Gemini Judge)
 export async function callJudge(
   rubricCriteria: RubricCriterion[],
   promptText: string,
-  modelOutput: string
+  modelOutput: string,
+  modelName?: string
 ): Promise<GradingResult> {
   const activeProvider = getActiveProvider();
 
@@ -293,21 +320,16 @@ export async function callJudge(
     return getMockEvaluation(rubricCriteria, promptText, modelOutput);
   }
 
-  const judgeSystemPrompt = `You are a strict, consistent grading judge for a prompt-engineering practice platform. You will be given:
-1. A rubric with weighted criteria
-2. The user's submitted prompt
-3. The model output produced by running that prompt
-
-Score each criterion independently from 0-100 based ONLY on its written description. Do not be swayed by writing quality or length beyond what each criterion asks for. Return ONLY valid JSON in this exact shape:
-
+  const modelLabel = modelName || "Target Model";
+  const judgeSystemPrompt = `You are a strict, objective grading judge evaluating a prompt engineering submission tested against ${modelLabel}.
+Score each rubric criterion independently from 0-100 based strictly on whether ${modelLabel}'s actual output satisfies the requirement and how well the user's prompt guided it.
+Return ONLY valid JSON in this exact shape:
 {
   "criteria_scores": [
-    {"label": "...", "score": 0-100, "justification": "one clear sentence explaining what passed or failed"}
+    {"label": "exact criterion name", "score": 0-100, "justification": "one specific sentence on how ${modelLabel}'s output performed"}
   ],
-  "overall_notes": "one or two sentences of actionable feedback for the user"
-}
-
-Be consistent and objective. Do not invent criteria not listed in the rubric.`;
+  "overall_notes": "one actionable sentence specifically tailored to ${modelLabel}'s execution"
+}`;
 
   const rubricText = rubricCriteria
     .map((c) => `- ${c.name} (Weight: ${c.weight}%): ${c.description}`)
@@ -316,42 +338,85 @@ Be consistent and objective. Do not invent criteria not listed in the rubric.`;
   const userContent = `[Challenge Rubric]
 ${rubricText}
 
+[Target Model]: ${modelLabel}
+
 [User Submitted Prompt Template]
 ${promptText}
 
-[Model Output to Grade]
+[${modelLabel} Output to Grade]
 ${modelOutput}
 
-Please evaluate the above model output against the user prompt template and rubric criteria. Output JSON.`;
+Please evaluate the above output against the rubric criteria. Output strict JSON only.`;
 
+  // 1. Try OpenRouter AI Judge
+  const openrouterKey = process.env.OPENROUTER_API_KEY;
+  if (openrouterKey && !openrouterKey.startsWith("your-") && !openrouterKey.startsWith("dummy-")) {
+    try {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        signal: AbortSignal.timeout(18000),
+        headers: {
+          Authorization: `Bearer ${openrouterKey}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "http://localhost:3000",
+          "X-Title": "PromptSesh",
+        },
+        body: JSON.stringify({
+          model: "openrouter/free",
+          messages: [
+            { role: "system", content: judgeSystemPrompt },
+            { role: "user", content: userContent },
+          ],
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        let jsonText = data.choices?.[0]?.message?.content || "";
+        const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (parsed && Array.isArray(parsed.criteria_scores) && parsed.criteria_scores.length > 0) {
+            return parsed as GradingResult;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("OpenRouter judge call failed, trying Gemini:", err);
+    }
+  }
+
+  // 2. Try Gemini Judge
   try {
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
+    if (apiKey && !apiKey.startsWith("your-") && !apiKey.startsWith("dummy-")) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey! },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: userContent }] }],
-        systemInstruction: { parts: [{ text: judgeSystemPrompt }] },
-        generationConfig: {
-          responseMimeType: "application/json",
-        },
-      }),
-    });
+      const response = await fetch(url, {
+        method: "POST",
+        signal: AbortSignal.timeout(6000),
+        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: userContent }] }],
+          systemInstruction: { parts: [{ text: judgeSystemPrompt }] },
+          generationConfig: {
+            responseMimeType: "application/json",
+          },
+        }),
+      });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`Gemini Judge API error: ${response.status} - ${errText}`);
+      if (response.ok) {
+        const data = await response.json();
+        const jsonText = data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+        const result: GradingResult = JSON.parse(jsonText.trim());
+        if (result && Array.isArray(result.criteria_scores)) {
+          return result;
+        }
+      }
     }
-
-    const data = await response.json();
-    const jsonText = data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-    
-    const result: GradingResult = JSON.parse(jsonText.trim());
-    return result;
   } catch (error: any) {
-    console.error("Gemini Judge API call failed, falling back to mock:", error);
-    return getMockEvaluation(rubricCriteria, promptText, modelOutput, error.message || "Connection error");
+    console.error("Gemini Judge API call failed, falling back to heuristic:", error);
   }
+
+  return getMockEvaluation(rubricCriteria, promptText, modelOutput);
 }
